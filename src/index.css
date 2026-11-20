@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Identidad AM Creators: azul royal #0300FF, neutros #FFFFFF / #F5F5F7 / #0A0A0A,
+   Montserrat, radios de 12px, sombras suaves. */
+:root {
+  --radius: 12px;
+  --background: #f5f5f7;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #0300ff;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f7;
+  --secondary-foreground: #0a0a0a;
+  --muted: #f5f5f7;
+  --muted-foreground: #6b6b73;
+  --accent: #ebebff;
+  --accent-foreground: #0300ff;
+  --destructive: #d92d20;
+  --success: #12805c;
+  --warning: #b54708;
+  --border: #e6e6ea;
+  --input: #e0e0e6;
+  --ring: #0300ff;
+  --brand-text: #0300ff;
+  --sidebar: #ffffff;
+  --shadow-soft: 0 1px 2px rgb(10 10 10 / 0.04), 0 4px 16px rgb(10 10 10 / 0.04);
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #f5f5f7;
+  --card: #141416;
+  --card-foreground: #f5f5f7;
+  --popover: #141416;
+  --popover-foreground: #f5f5f7;
+  --primary: #0300ff;
+  --primary-foreground: #ffffff;
+  --secondary: #1c1c1f;
+  --secondary-foreground: #f5f5f7;
+  --muted: #1c1c1f;
+  --muted-foreground: #9a9aa3;
+  --accent: #1a1a3d;
+  --accent-foreground: #b5b4ff;
+  --destructive: #f04438;
+  --success: #32d583;
+  --warning: #fdb022;
+  --border: #26262b;
+  --input: #2e2e34;
+  --ring: #6664ff;
+  --brand-text: #a5a3ff;      /* texto azul sobre fondo oscuro: #0300FF no se lee sobre negro */
+  --sidebar: #0f0f11;
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+
+@theme inline {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand: var(--brand-text);
+  --color-sidebar: var(--sidebar);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --shadow-soft: var(--shadow-soft);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "tnum" 1;
+  }
+  h1, h2, h3, h4 {
+    @apply font-semibold tracking-tight;
+  }
+}
