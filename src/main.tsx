@@ -6,15 +6,15 @@ import './index.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, HashRouter } from 'react-router-dom'
+import { BrowserRouter, MemoryRouter } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider } from '@/features/auth/auth-context'
 import { ThemeProvider, useTheme } from '@/providers/theme'
 import App from './App'
 
-// La versión demo de un solo archivo usa rutas con # para funcionar en cualquier lado.
-const Router = import.meta.env.VITE_ROUTER === 'hash' ? HashRouter : BrowserRouter
+// La versión demo de un solo archivo navega en memoria, así funciona abierta desde cualquier lado.
+const Router = import.meta.env.VITE_ROUTER === 'memory' ? MemoryRouter : BrowserRouter
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: true, staleTime: 15_000 } },
