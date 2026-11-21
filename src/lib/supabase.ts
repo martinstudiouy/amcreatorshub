@@ -1,8 +1,22 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+/**
+ * Nos quedamos solo con https://xxxx.supabase.co aunque se haya pegado con algo de más
+ * (/rest/v1/, una barra al final, espacios o comillas).
+ */
+function cleanUrl(raw: string | undefined) {
+  const v = raw?.trim().replace(/^['"]|['"]$/g, '')
+  if (!v) return undefined
+  try {
+    return new URL(v.startsWith('http') ? v : `https://${v}`).origin
+  } catch {
+    return undefined
+  }
+}
+
+const url = cleanUrl(import.meta.env.VITE_SUPABASE_URL as string | undefined)
+const anonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim().replace(/^['"]|['"]$/g, '') || undefined
 
 /**
  * Modo demo: si todavía no cargaste las claves de Supabase en el archivo .env,
