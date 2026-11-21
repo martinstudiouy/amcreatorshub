@@ -169,7 +169,8 @@ function DashboardContent({ data }: { data: DashboardSummary }) {
             ) : (
               <ul className="divide-y">
                 {data.tasks.map((t) => (
-                  <li key={t.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                  <li key={t.id} className="relative flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                    <Link to={`/proyectos?vista=tablero&tarea=${t.id}`} className="absolute inset-0" aria-label={`Abrir ${t.title}`} />
                     <PriorityDot priority={t.priority} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{t.title}</p>

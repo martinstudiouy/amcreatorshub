@@ -22,7 +22,7 @@ const queryClient = new QueryClient({
 
 function ThemedToaster() {
   const { resolved } = useTheme()
-  return <Toaster theme={resolved} position="top-right" richColors closeButton toastOptions={{ style: { fontFamily: 'Montserrat, sans-serif', borderRadius: 12 } }} />
+  return <Toaster theme={resolved} position="top-center" richColors closeButton toastOptions={{ style: { fontFamily: 'Montserrat, sans-serif', borderRadius: 12 } }} />
 }
 
 createRoot(document.getElementById('root')!).render(

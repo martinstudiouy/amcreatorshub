@@ -6,12 +6,12 @@ CRM interno de **AM Creators** (Montevideo): clientes, proyectos, contenidos, ag
 - **Idioma:** español rioplatense · **Moneda:** UYU y USD · **Zona horaria:** America/Montevideo · **Fechas:** DD/MM/AAAA
 - **Marca:** azul royal `#0300FF`, Montserrat, isotipo "am" en vector tomado del brandbook
 
-## Estado: Fase 1 de 8
+## Estado: Fase 2 de 8
 
 | Fase | Qué incluye | Estado |
 | --- | --- | --- |
 | 1 | Login, roles, layout, búsqueda Ctrl/Cmd + K, notificaciones, dashboard, configuración, **base de datos completa (34 tablas con RLS)** | ✅ |
-| 2 | Clientes y proyectos/tareas (Kanban) | — |
+| 2 | Clientes (ficha, brand kit, notas) y proyectos: tablero Kanban, lista, timeline, tareas con checklist, comentarios y adjuntos, plantillas | ✅ |
 | 3 | Agenda + Google Calendar | — |
 | 4 | Finanzas y PDFs | — |
 | 5 | Calendario de contenidos y aprobaciones | — |
@@ -32,7 +32,8 @@ npm run build:demo   # arma dist-demo/index.html: un solo archivo que se abre co
 ## Conectar Supabase
 
 1. Creá un proyecto en [supabase.com](https://supabase.com) (región São Paulo, la más cercana).
-2. En **SQL Editor**, pegá y corré `supabase/instalar_todo.sql` (crea las 34 tablas, permisos y buckets).
+2. En **SQL Editor**, pegá y corré `supabase/instalar_todo.sql` (crea las 34 tablas, vistas, permisos y buckets).
+   Si ya habías instalado una fase anterior, corré solo los archivos nuevos de `supabase/migrations/`, en orden.
 3. Opcional: corré `supabase/seed.sql` para cargar datos de ejemplo. Para borrarlos después: `supabase/limpiar_datos_ejemplo.sql`.
 4. Copiá `.env.example` como `.env` y completá URL y clave *anon* (Project Settings → API).
 5. Creá tu usuario en **Authentication → Users → Add user**. **El primer usuario queda como Admin**; los siguientes, como Equipo.
@@ -49,7 +50,7 @@ src/
   components/ui      componentes base (estilo shadcn/ui)
   components/layout  barra lateral, barra superior, Ctrl/Cmd + K, notificaciones, logo
   data/              acceso a datos (Supabase o demo), tipos y etiquetas
-  features/          un módulo por sección: auth, dashboard, settings…
+  features/          un módulo por sección: auth, dashboard, clients, projects, settings…
   types/database.ts  tipos generados desde Supabase
 ```
 

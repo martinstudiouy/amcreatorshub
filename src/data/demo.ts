@@ -67,15 +67,6 @@ export const demo = {
   ] as Notification[],
 
   searchIndex: [
-    { kind: 'cliente', id: id(1), title: 'Café Rambla', subtitle: 'Sofía Pereira · Gastronomía', link: `/clientes/${id(1)}` },
-    { kind: 'cliente', id: id(2), title: 'Pilates Pocitos', subtitle: 'Valentina Ruiz · Salud y bienestar', link: `/clientes/${id(2)}` },
-    { kind: 'cliente', id: id(3), title: 'Bodega Los Altos', subtitle: 'Diego Fernández · Vinos', link: `/clientes/${id(3)}` },
-    { kind: 'cliente', id: id(4), title: 'Nómade Surf', subtitle: 'Martina Silva · Deportes', link: `/clientes/${id(4)}` },
-    { kind: 'cliente', id: id(5), title: 'Ferretería El Tornillo', subtitle: 'Jorge Méndez · Comercio', link: `/clientes/${id(5)}` },
-    { kind: 'proyecto', id: id(61), title: 'Redes: plan del mes', subtitle: 'Café Rambla', link: `/proyectos/${id(61)}` },
-    { kind: 'proyecto', id: id(62), title: 'Identidad visual completa', subtitle: 'Bodega Los Altos', link: `/proyectos/${id(62)}` },
-    { kind: 'proyecto', id: id(63), title: 'Sesión de fotos de temporada', subtitle: 'Pilates Pocitos', link: `/proyectos/${id(63)}` },
-    { kind: 'proyecto', id: id(64), title: 'Web institucional', subtitle: 'Nómade Surf', link: `/proyectos/${id(64)}` },
     { kind: 'publicacion', id: id(111), title: 'Llegó la carta de verano: 5 bebidas frías para la rambla', subtitle: 'Café Rambla', link: `/contenidos?post=${id(111)}` },
     { kind: 'publicacion', id: id(112), title: 'Clase abierta de reformer: te esperamos el sábado', subtitle: 'Pilates Pocitos', link: `/contenidos?post=${id(112)}` },
     { kind: 'publicacion', id: id(113), title: 'Detrás de escena: así nace nuestra nueva etiqueta', subtitle: 'Bodega Los Altos', link: `/contenidos?post=${id(113)}` },

@@ -2,7 +2,7 @@ import { Settings } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { useRole } from '@/features/auth/auth-context'
 import { cn } from '@/lib/utils'
-import { navFor } from './nav'
+import { CURRENT_PHASE, navFor } from './nav'
 import { Wordmark } from './wordmark'
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -24,7 +24,7 @@ export function Sidebar() {
           <NavLink key={item.to} to={item.to} end={item.to === '/'} className={linkClass}>
             <item.icon className="size-[18px]" />
             <span className="flex-1">{item.label}</span>
-            {item.phase > 1 && (
+            {item.phase > CURRENT_PHASE && (
               <span className="rounded px-1.5 text-[10px] font-medium text-muted-foreground/70 group-hover:text-muted-foreground">
                 F{item.phase}
               </span>

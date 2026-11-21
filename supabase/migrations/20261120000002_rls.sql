@@ -162,12 +162,13 @@ begin
 
   if tg_op = 'INSERT' then
     act  := 'creo';
-    summ := kind || ' creado: ' || label;
+    summ := kind || case when kind in ('Tarea', 'Publicación') then ' creada: ' else ' creado: ' end || label;
   else
     old_rec := to_jsonb(old);
     if (rec ->> 'deleted_at') is not null and (old_rec ->> 'deleted_at') is null then
       act  := 'borro';
-      summ := kind || ' enviado a la papelera: ' || label;
+      summ := kind || case when kind in ('Tarea', 'Publicación') then ' enviada' else ' enviado' end
+              || ' a la papelera: ' || label;
     elsif status_col <> '' and (rec ->> status_col) is distinct from (old_rec ->> status_col) then
       act  := 'cambio_estado';
       summ := kind || ' "' || label || '" pasó a ' || case rec ->> status_col

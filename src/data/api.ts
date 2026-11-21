@@ -69,7 +69,16 @@ export async function globalSearch(q: string): Promise<SearchResult[]> {
   if (isDemo) {
     await wait(150)
     const t = term.toLowerCase()
-    return demo.searchIndex.filter((r) => `${r.title} ${r.subtitle}`.toLowerCase().includes(t))
+    const { db } = await import('./demo-db')
+    const hit = (...xs: (string | null)[]) => xs.some((x) => x?.toLowerCase().includes(t))
+    const clients = db.clients.rows
+      .filter((c) => !c.deleted_at && hit(c.brand_name, c.name, c.instagram_handle, c.email))
+      .map((c): SearchResult => ({ kind: 'cliente', id: c.id, title: c.brand_name, subtitle: [c.name, c.industry].filter(Boolean).join(' · '), link: `/clientes/${c.id}` }))
+    const projects = db.projects.rows
+      .filter((p) => !p.deleted_at && hit(p.name, db.clients.get(p.client_id)?.brand_name ?? null))
+      .map((p): SearchResult => ({ kind: 'proyecto', id: p.id, title: p.name, subtitle: db.clients.get(p.client_id)?.brand_name ?? '', link: `/proyectos/${p.id}` }))
+    const posts = demo.searchIndex.filter((r) => r.kind === 'publicacion' && `${r.title} ${r.subtitle}`.toLowerCase().includes(t))
+    return [...clients.slice(0, 6), ...projects.slice(0, 6), ...posts]
   }
   return check(await sb().rpc('global_search', { q: term })) as SearchResult[]
 }

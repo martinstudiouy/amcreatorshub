@@ -6,9 +6,13 @@ import { ForgotPasswordPage } from '@/features/auth/forgot-password-page'
 import { RequireAuth, RequireRole } from '@/features/auth/guards'
 import { LoginPage } from '@/features/auth/login-page'
 import { ResetPasswordPage } from '@/features/auth/reset-password-page'
+import { ClientDetailPage } from '@/features/clients/client-detail-page'
+import { ClientsPage } from '@/features/clients/clients-page'
 import { DashboardPage } from '@/features/dashboard/dashboard-page'
 import { ClientPortal } from '@/features/misc/client-portal'
 import { ComingSoon, NotFound } from '@/features/misc/coming-soon'
+import { ProjectDetailPage } from '@/features/projects/project-detail-page'
+import { ProjectsPage } from '@/features/projects/projects-page'
 import { SettingsPage } from '@/features/settings/settings-page'
 
 /** El rol cliente solo ve su portal; admin y equipo ven el CRM. */
@@ -32,7 +36,11 @@ export default function App() {
       <Route element={<RequireAuth><StaffArea /></RequireAuth>}>
         <Route index element={<DashboardPage />} />
         <Route path="configuracion" element={<SettingsPage />} />
-        {NAV.filter((n) => n.phase > 1).map((n) => (
+        <Route path="clientes" element={<ClientsPage />} />
+        <Route path="clientes/:id" element={<ClientDetailPage />} />
+        <Route path="proyectos" element={<ProjectsPage />} />
+        <Route path="proyectos/:id" element={<ProjectDetailPage />} />
+        {NAV.filter((n) => n.phase > 2).map((n) => (
           <Route
             key={n.to}
             path={`${n.to.slice(1)}/*`}

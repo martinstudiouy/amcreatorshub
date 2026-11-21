@@ -1,5 +1,9 @@
 import { CalendarClock, CalendarRange, FolderKanban, ListTodo, LogOut, Monitor, Moon, Plus, Receipt, Search, Sun, User, Users } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ClientFormDialog } from '@/features/clients/client-form-dialog'
+import { NewTaskDialog } from '@/features/projects/new-task-dialog'
+import { ProjectFormDialog } from '@/features/projects/project-form-dialog'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -10,10 +14,11 @@ import { useTheme } from '@/providers/theme'
 import { NotificationsMenu } from './notifications-menu'
 import { Wordmark } from './wordmark'
 
-const NEW_ITEMS = [
-  { label: 'Cliente', icon: Users, phase: 2, admin: false },
-  { label: 'Proyecto', icon: FolderKanban, phase: 2, admin: false },
-  { label: 'Tarea', icon: ListTodo, phase: 2, admin: false },
+type NewKind = 'cliente' | 'proyecto' | 'tarea'
+const NEW_ITEMS: { label: string; icon: typeof Users; phase: number; admin: boolean; kind?: NewKind }[] = [
+  { label: 'Cliente', icon: Users, phase: 2, admin: false, kind: 'cliente' },
+  { label: 'Proyecto', icon: FolderKanban, phase: 2, admin: false, kind: 'proyecto' },
+  { label: 'Tarea', icon: ListTodo, phase: 2, admin: false, kind: 'tarea' },
   { label: 'Reunión', icon: CalendarClock, phase: 3, admin: false },
   { label: 'Gasto', icon: Receipt, phase: 4, admin: true },
   { label: 'Publicación', icon: CalendarRange, phase: 5, admin: false },
@@ -25,6 +30,8 @@ export function Topbar({ onSearch }: { onSearch: () => void }) {
   const navigate = useNavigate()
   const isMac = navigator.platform.toLowerCase().includes('mac')
   const isAdmin = profile?.role === 'admin'
+  const [creating, setCreating] = useState<NewKind | null>(null)
+  const close = (o: boolean) => !o && setCreating(null)
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur md:px-6">
@@ -55,10 +62,10 @@ export function Topbar({ onSearch }: { onSearch: () => void }) {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Crear</DropdownMenuLabel>
             {NEW_ITEMS.filter((i) => !i.admin || isAdmin).map((i) => (
-              <DropdownMenuItem key={i.label} disabled>
+              <DropdownMenuItem key={i.label} disabled={!i.kind} onSelect={() => i.kind && setCreating(i.kind)}>
                 <i.icon />
                 <span className="flex-1">{i.label}</span>
-                <span className="text-[10px] text-muted-foreground">Fase {i.phase}</span>
+                {!i.kind && <span className="text-[10px] text-muted-foreground">Fase {i.phase}</span>}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -102,6 +109,9 @@ export function Topbar({ onSearch }: { onSearch: () => void }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <ClientFormDialog open={creating === 'cliente'} onOpenChange={close} onSaved={(id) => navigate(`/clientes/${id}`)} />
+      <ProjectFormDialog open={creating === 'proyecto'} onOpenChange={close} onSaved={(id) => navigate(`/proyectos/${id}`)} />
+      <NewTaskDialog open={creating === 'tarea'} onOpenChange={close} onCreated={(id) => navigate(`/proyectos?vista=tablero&tarea=${id}`)} />
     </header>
   )
 }
