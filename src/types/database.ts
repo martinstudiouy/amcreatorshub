@@ -144,6 +144,7 @@ export type Database = {
           created_at: string;
           google_email: string;
           id: string;
+          last_error: string | null;
           last_synced_at: string | null;
           status: Database["public"]["Enums"]["connection_status"];
           sync_token: string | null;
@@ -159,6 +160,7 @@ export type Database = {
           created_at?: string;
           google_email: string;
           id?: string;
+          last_error?: string | null;
           last_synced_at?: string | null;
           status?: Database["public"]["Enums"]["connection_status"];
           sync_token?: string | null;
@@ -173,6 +175,7 @@ export type Database = {
           created_at?: string;
           google_email?: string;
           id?: string;
+          last_error?: string | null;
           last_synced_at?: string | null;
           status?: Database["public"]["Enums"]["connection_status"];
           sync_token?: string | null;
@@ -687,6 +690,7 @@ export type Database = {
           all_day: boolean;
           attendee_ids: string[];
           client_id: string | null;
+          create_meet: boolean;
           created_at: string;
           created_by: string | null;
           deleted_at: string | null;
@@ -698,6 +702,8 @@ export type Database = {
           meet_url: string | null;
           notes: string | null;
           remind_minutes_before: number | null;
+          reminder_sent_at: string | null;
+          source: string;
           starts_at: string;
           sync_status: Database["public"]["Enums"]["sync_status"];
           title: string;
@@ -711,6 +717,7 @@ export type Database = {
           all_day?: boolean;
           attendee_ids?: string[];
           client_id?: string | null;
+          create_meet?: boolean;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
@@ -722,6 +729,8 @@ export type Database = {
           meet_url?: string | null;
           notes?: string | null;
           remind_minutes_before?: number | null;
+          reminder_sent_at?: string | null;
+          source?: string;
           starts_at: string;
           sync_status?: Database["public"]["Enums"]["sync_status"];
           title: string;
@@ -734,6 +743,7 @@ export type Database = {
           all_day?: boolean;
           attendee_ids?: string[];
           client_id?: string | null;
+          create_meet?: boolean;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
@@ -745,6 +755,8 @@ export type Database = {
           meet_url?: string | null;
           notes?: string | null;
           remind_minutes_before?: number | null;
+          reminder_sent_at?: string | null;
+          source?: string;
           starts_at?: string;
           sync_status?: Database["public"]["Enums"]["sync_status"];
           title?: string;
@@ -2410,6 +2422,68 @@ export type Database = {
           },
         ];
       };
+      events_overview: {
+        Row: {
+          all_day: boolean;
+          attendee_ids: string[];
+          client_color: string | null;
+          client_id: string | null;
+          client_name: string | null;
+          create_meet: boolean;
+          created_at: string;
+          created_by: string | null;
+          created_by_name: string | null;
+          deleted_at: string | null;
+          ends_at: string;
+          google_etag: string | null;
+          google_event_id: string | null;
+          id: string;
+          location: string | null;
+          meet_url: string | null;
+          notes: string | null;
+          remind_minutes_before: number | null;
+          reminder_sent_at: string | null;
+          source: string;
+          starts_at: string;
+          sync_status: Database["public"]["Enums"]["sync_status"];
+          title: string;
+          type: Database["public"]["Enums"]["event_type"];
+          updated_at: string;
+          whatsapp_reminder: boolean;
+          whatsapp_reminder_sent_at: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [
+          {
+            foreignKeyName: "events_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "events_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "events_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients_v";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "events_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       projects_overview: {
         Row: {
           budget: number | null;
@@ -2686,7 +2760,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"];
       };
       dashboard_summary: { Args: Record<PropertyKey, never>; Returns: Json };
+      delete_google_connection: { Args: { p_connection_id: string }; Returns: undefined };
       fx_rate_for: { Args: { p_date?: string }; Returns: number };
+      get_cron_secret: { Args: Record<PropertyKey, never>; Returns: string };
+      get_google_refresh_token: { Args: { p_connection_id: string }; Returns: string };
       global_search: {
         Args: { q: string };
         Returns: {
@@ -2697,9 +2774,21 @@ export type Database = {
           title: string;
         }[];
       };
+      google_sync_status: { Args: Record<PropertyKey, never>; Returns: Json };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_staff: { Args: Record<PropertyKey, never>; Returns: boolean };
       mark_all_notifications_read: { Args: Record<PropertyKey, never>; Returns: undefined };
+      save_google_connection: {
+        Args: {
+          p_calendar_id?: string;
+          p_email: string;
+          p_refresh_token: string;
+          p_user_id: string;
+        };
+        Returns: string;
+      };
+      send_event_reminders: { Args: Record<PropertyKey, never>; Returns: number };
+      setup_google_sync_cron: { Args: { p_project_url: string }; Returns: undefined };
       today_mvd: { Args: Record<PropertyKey, never>; Returns: string };
     };
     Enums: {

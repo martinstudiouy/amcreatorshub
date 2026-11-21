@@ -6,6 +6,7 @@ import { ForgotPasswordPage } from '@/features/auth/forgot-password-page'
 import { RequireAuth, RequireRole } from '@/features/auth/guards'
 import { LoginPage } from '@/features/auth/login-page'
 import { ResetPasswordPage } from '@/features/auth/reset-password-page'
+import { AgendaPage } from '@/features/agenda/agenda-page'
 import { ClientDetailPage } from '@/features/clients/client-detail-page'
 import { ClientsPage } from '@/features/clients/clients-page'
 import { DashboardPage } from '@/features/dashboard/dashboard-page'
@@ -40,7 +41,8 @@ export default function App() {
         <Route path="clientes/:id" element={<ClientDetailPage />} />
         <Route path="proyectos" element={<ProjectsPage />} />
         <Route path="proyectos/:id" element={<ProjectDetailPage />} />
-        {NAV.filter((n) => n.phase > 2).map((n) => (
+        <Route path="agenda" element={<AgendaPage />} />
+        {NAV.filter((n) => n.phase > 3).map((n) => (
           <Route
             key={n.to}
             path={`${n.to.slice(1)}/*`}

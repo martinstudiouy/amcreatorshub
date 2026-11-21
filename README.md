@@ -6,13 +6,13 @@ CRM interno de **AM Creators** (Montevideo): clientes, proyectos, contenidos, ag
 - **Idioma:** español rioplatense · **Moneda:** UYU y USD · **Zona horaria:** America/Montevideo · **Fechas:** DD/MM/AAAA
 - **Marca:** azul royal `#0300FF`, Montserrat, isotipo "am" en vector tomado del brandbook
 
-## Estado: Fase 2 de 8
+## Estado: Fase 3 de 8
 
 | Fase | Qué incluye | Estado |
 | --- | --- | --- |
 | 1 | Login, roles, layout, búsqueda Ctrl/Cmd + K, notificaciones, dashboard, configuración, **base de datos completa (34 tablas con RLS)** | ✅ |
 | 2 | Clientes (ficha, brand kit, notas) y proyectos: tablero Kanban, lista, timeline, tareas con checklist, comentarios y adjuntos, plantillas | ✅ |
-| 3 | Agenda + Google Calendar | — |
+| 3 | Agenda (mes, semana, lista), recordatorios internos y sincronización en ambos sentidos con Google Calendar | ✅ |
 | 4 | Finanzas y PDFs | — |
 | 5 | Calendario de contenidos y aprobaciones | — |
 | 6 | Instagram: conexión, métricas y publicación automática | — |
@@ -53,6 +53,21 @@ src/
   features/          un módulo por sección: auth, dashboard, clients, projects, settings…
   types/database.ts  tipos generados desde Supabase
 ```
+
+## Publicación automática
+
+- **App (frontend):** Netlify publica sola cada cambio en `main` (`netlify.toml`).
+- **Base de datos y funciones:** el workflow `.github/workflows/supabase.yml` aplica las migraciones nuevas y publica las Edge Functions en cada cambio dentro de `supabase/`.
+  Necesita estos secretos en GitHub (Settings → Secrets and variables → Actions):
+  `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, `SUPABASE_DB_PASSWORD`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `APP_URL`.
+- `supabase/instalar_todo.sql` contiene solo las Fases 1 y 2 (la base que se instaló a mano). Desde la Fase 3, las migraciones las aplica el workflow.
+
+## Google Calendar
+
+- Se conecta **una sola cuenta** (la del estudio) desde Configuración → Integraciones (solo admin).
+- El refresh token se guarda en Supabase Vault; la Edge Function `google-oauth` maneja la conexión y `google-sync` sincroniza.
+- Un cron (pg_cron + pg_net) llama a `google-sync` cada 5 minutos; además se sincroniza al guardar un evento.
+- Los recordatorios internos los manda otro cron cada minuto (`send_event_reminders`).
 
 ## Seguridad
 

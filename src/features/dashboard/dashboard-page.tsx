@@ -113,7 +113,8 @@ function DashboardContent({ data }: { data: DashboardSummary }) {
             ) : (
               <ul className="divide-y">
                 {data.meetings.map((m) => (
-                  <li key={m.id} className="flex gap-3 py-3 first:pt-0 last:pb-0">
+                  <li key={m.id} className="relative flex gap-3 py-3 first:pt-0 last:pb-0">
+                    <Link to={`/agenda?evento=${m.id}`} className="absolute inset-0" aria-label={`Abrir ${m.title}`} />
                     <div className="w-12 shrink-0 text-sm font-semibold tabular-nums">{formatTime(m.starts_at)}</div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{m.title}</p>
@@ -122,7 +123,7 @@ function DashboardContent({ data }: { data: DashboardSummary }) {
                         {[m.client_name, eventTypeLabel[m.type]].filter(Boolean).join(' · ')}
                       </p>
                       {m.meet_url ? (
-                        <a href={m.meet_url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline">
+                        <a href={m.meet_url} target="_blank" rel="noreferrer" className="relative z-10 mt-1 inline-flex items-center gap-1 text-xs font-medium text-brand hover:underline">
                           <Video className="size-3.5" /> Unirse a Meet
                         </a>
                       ) : m.location ? (

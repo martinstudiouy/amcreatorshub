@@ -427,3 +427,12 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# ---------------------------------------------------------------- AM Creators Hub
+# Estas funciones validan por su cuenta quién llama (JWT del usuario o clave del cron).
+# google-oauth además recibe la redirección de Google, que no trae JWT.
+[functions.google-oauth]
+verify_jwt = false
+
+[functions.google-sync]
+verify_jwt = false

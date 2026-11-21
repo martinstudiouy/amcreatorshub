@@ -114,6 +114,36 @@ export const db = {
   ]),
 
   attachments: new DemoTable<Tables<'task_attachments'>>([]),
+
+  events: new DemoTable<Tables<'events'>>([
+    demoEvent(121, id(3), 'reunion', 'Presentación de rutas de logo', 0, '10:00', '11:00', { meet_url: 'https://meet.google.com/abc-defg-hij', notes: 'Llevar las 3 rutas impresas en PDF', attendee_ids: [DEMO_USER_ID] }),
+    demoEvent(122, id(2), 'sesion_fotos', 'Sesión de fotos de temporada', 0, '15:00', '17:30', { location: 'Estudio AM Creators', attendee_ids: [DEMO_USER_ID, VALERIA_ID] }),
+    demoEvent(123, id(5), 'reunion', 'Primera reunión: redes', 1, '09:30', '10:15', { location: 'Ferretería El Tornillo, Av. Italia' }),
+    demoEvent(124, id(1), 'entrega', 'Entrega del plan de diciembre', 5, '00:00', '23:59', { all_day: true }),
+    demoEvent(125, null, 'evento', 'Feria de emprendedores (Google)', 3, '18:00', '21:00', { location: 'Espacio Modo', source: 'google' }),
+    demoEvent(126, id(1), 'reunion', 'Revisión mensual con Café Rambla', -2, '11:00', '11:45', { meet_url: 'https://meet.google.com/xyz-abcd-efg' }),
+    demoEvent(127, id(4), 'reunion', 'Retomar la web', 8, '16:00', '17:00', {}),
+  ]),
+}
+
+function demoEvent(
+  n: number,
+  clientId: string | null,
+  type: Tables<'events'>['type'],
+  title: string,
+  dayOffset: number,
+  from: string,
+  to: string,
+  extra: Partial<Tables<'events'>>,
+): Omit<Tables<'events'>, 'created_at' | 'updated_at'> {
+  const at = (hhmm: string) => new Date(`${d(dayOffset)}T${hhmm}:00-03:00`).toISOString()
+  return {
+    id: id(n), client_id: clientId, type, title, starts_at: at(from), ends_at: at(to), all_day: false,
+    location: null, meet_url: null, notes: null, attendee_ids: [], remind_minutes_before: 30,
+    whatsapp_reminder: false, whatsapp_reminder_sent_at: null, google_event_id: null, google_etag: null,
+    sync_status: 'sincronizado', created_by: DEMO_USER_ID, deleted_at: null, create_meet: false,
+    reminder_sent_at: null, source: 'crm', ...extra,
+  }
 }
 
 /** Archivos subidos en modo demo: ruta → URL temporal del navegador */

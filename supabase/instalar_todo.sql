@@ -1,7 +1,8 @@
 -- =====================================================================
 -- AM Creators Hub — INSTALACIÓN COMPLETA (Fases 1 y 2)
 -- Pegá TODO este archivo en Supabase → SQL Editor → New query → Run.
--- Es la suma de las migraciones de supabase/migrations, en orden.
+-- Es la suma de las migraciones de las Fases 1 y 2. Las siguientes las aplica
+-- automáticamente GitHub Actions (.github/workflows/supabase.yml).
 -- =====================================================================
 
 -- >>> supabase/migrations/20261120000001_schema.sql
