@@ -126,6 +126,52 @@ export const db = {
   ]),
 }
 
+// ---------------------------------------------------------------- Finanzas (igual que seed.sql)
+const fin = { created_by: null as string | null, deleted_at: null as string | null }
+const prevMonth = (() => {
+  const dt = new Date(`${monthStart}T12:00:00Z`)
+  dt.setUTCMonth(dt.getUTCMonth() - 1)
+  return dt.toISOString().slice(0, 10)
+})()
+
+export const finance = {
+  fees: new DemoTable<Tables<'recurring_fees'>>([
+    { id: id(131), client_id: id(1), description: 'Gestión de redes', amount: 18000, currency: 'UYU', billing_day: 1, start_date: d(-240), end_date: null, is_active: true },
+    { id: id(132), client_id: id(2), description: 'Gestión de redes', amount: 15000, currency: 'UYU', billing_day: 5, start_date: d(-120), end_date: null, is_active: true },
+  ]),
+  invoices: new DemoTable<Tables<'invoices'>>([
+    { ...fin, id: id(145), client_id: id(1), project_id: null, recurring_fee_id: id(131), number: 'AMC-R-0001', issue_date: prevMonth, due_date: addDays(prevMonth, 10), currency: 'UYU', fx_rate: 1, subtotal: 18000, vat_rate: 0, total: 18000, status: 'cobrado', paid_at: new Date(`${addDays(prevMonth, 4)}T15:00:00Z`).toISOString(), payment_method: 'Transferencia', cfe_number: null, pdf_path: null, notes: null },
+    { ...fin, id: id(141), client_id: id(1), project_id: null, recurring_fee_id: id(131), number: 'AMC-R-0002', issue_date: monthStart, due_date: addDays(monthStart, 10), currency: 'UYU', fx_rate: 1, subtotal: 18000, vat_rate: 0, total: 18000, status: 'cobrado', paid_at: ago(60 * 24 * 8), payment_method: 'Transferencia', cfe_number: 'A-104233', pdf_path: null, notes: null },
+    { ...fin, id: id(142), client_id: id(2), project_id: null, recurring_fee_id: id(132), number: 'AMC-R-0003', issue_date: addDays(monthStart, 4), due_date: d(5), currency: 'UYU', fx_rate: 1, subtotal: 15000, vat_rate: 0, total: 15000, status: 'pendiente', paid_at: null, payment_method: null, cfe_number: null, pdf_path: null, notes: null },
+    { ...fin, id: id(143), client_id: id(3), project_id: id(62), recurring_fee_id: null, number: 'AMC-R-0004', issue_date: d(-20), due_date: d(-15), currency: 'USD', fx_rate: 39.65, subtotal: 900, vat_rate: 0, total: 900, status: 'cobrado', paid_at: ago(60 * 24 * 17), payment_method: 'Transferencia', cfe_number: null, pdf_path: null, notes: null },
+    { ...fin, id: id(144), client_id: id(4), project_id: id(64), recurring_fee_id: null, number: 'AMC-R-0005', issue_date: d(-40), due_date: d(-25), currency: 'UYU', fx_rate: 1, subtotal: 12000, vat_rate: 0, total: 12000, status: 'vencido', paid_at: null, payment_method: null, cfe_number: null, pdf_path: null, notes: null },
+  ]),
+  invoiceItems: new DemoTable<Tables<'invoice_items'>>([
+    { id: id(150), invoice_id: id(145), description: 'Gestión de redes · mes anterior', quantity: 1, unit_price: 18000, position: 1 },
+    { id: id(151), invoice_id: id(141), description: 'Gestión de redes · mes en curso', quantity: 1, unit_price: 18000, position: 1 },
+    { id: id(152), invoice_id: id(142), description: 'Gestión de redes · mes en curso', quantity: 1, unit_price: 15000, position: 1 },
+    { id: id(153), invoice_id: id(143), description: 'Identidad visual: anticipo 50%', quantity: 1, unit_price: 900, position: 1 },
+    { id: id(154), invoice_id: id(144), description: 'Web institucional: segunda cuota', quantity: 1, unit_price: 12000, position: 1 },
+  ]),
+  quotes: new DemoTable<Tables<'quotes'>>([
+    { ...fin, id: id(155), client_id: id(5), project_id: null, number: 'AMC-P-0001', issue_date: d(-3), valid_until: d(12), currency: 'UYU', fx_rate: 1, subtotal: 54000, discount: 4000, vat_rate: 0, total: 50000, status: 'enviado', pdf_path: null, notes: 'Incluye 3 rutas creativas y 2 rondas de cambios.' },
+  ]),
+  quoteItems: new DemoTable<Tables<'quote_items'>>([
+    { id: id(156), quote_id: id(155), description: 'Identidad visual: logo, paleta y tipografías', quantity: 1, unit_price: 42000, position: 1 },
+    { id: id(157), quote_id: id(155), description: 'Manual de marca (PDF)', quantity: 1, unit_price: 12000, position: 2 },
+  ]),
+  expenses: new DemoTable<Tables<'expenses'>>([
+    { ...fin, id: id(161), category: 'software', description: 'Adobe Creative Cloud', amount: 60, currency: 'USD', fx_rate: 39.8, date: d(-60), client_id: null, project_id: null, is_recurring: true, recurrence_day: 15, receipt_path: null, parent_expense_id: null },
+    { ...fin, id: id(162), category: 'software', description: 'Supabase Pro', amount: 25, currency: 'USD', fx_rate: 39.8, date: d(-60), client_id: null, project_id: null, is_recurring: true, recurrence_day: 15, receipt_path: null, parent_expense_id: null },
+    { ...fin, id: id(163), category: 'software', description: 'Adobe Creative Cloud', amount: 60, currency: 'USD', fx_rate: 39.65, date: addDays(monthStart, 14), client_id: null, project_id: null, is_recurring: false, recurrence_day: null, receipt_path: null, parent_expense_id: id(161) },
+    { ...fin, id: id(164), category: 'software', description: 'Supabase Pro', amount: 25, currency: 'USD', fx_rate: 39.65, date: addDays(monthStart, 14), client_id: null, project_id: null, is_recurring: false, recurrence_day: null, receipt_path: null, parent_expense_id: id(162) },
+    { ...fin, id: id(165), category: 'freelancers', description: 'Fotógrafo asistente: sesión Pilates', amount: 3500, currency: 'UYU', fx_rate: 1, date: d(-2), client_id: id(2), project_id: id(63), is_recurring: false, recurrence_day: null, receipt_path: null, parent_expense_id: null },
+    { ...fin, id: id(166), category: 'publicidad', description: 'Pauta Instagram AM Creators', amount: 2500, currency: 'UYU', fx_rate: 1, date: addDays(prevMonth, 9), client_id: null, project_id: null, is_recurring: false, recurrence_day: null, receipt_path: null, parent_expense_id: null },
+    { ...fin, id: id(167), category: 'software', description: 'Adobe Creative Cloud', amount: 60, currency: 'USD', fx_rate: 39.5, date: addDays(prevMonth, 14), client_id: null, project_id: null, is_recurring: false, recurrence_day: null, receipt_path: null, parent_expense_id: id(161) },
+    { ...fin, id: id(168), category: 'equipos', description: 'Flash Godox', amount: 7900, currency: 'UYU', fx_rate: 1, date: addDays(prevMonth, 20), client_id: null, project_id: null, is_recurring: false, recurrence_day: null, receipt_path: null, parent_expense_id: null },
+  ]),
+}
+
 function demoEvent(
   n: number,
   clientId: string | null,

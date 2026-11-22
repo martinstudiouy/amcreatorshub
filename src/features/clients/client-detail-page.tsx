@@ -22,6 +22,7 @@ import { ProjectCard } from '@/features/projects/project-card'
 import { ProjectFormDialog } from '@/features/projects/project-form-dialog'
 import { formatDate, formatMoney } from '@/lib/format'
 import { invalidateCrm } from '@/lib/invalidate'
+import { ClientFinanceTab } from '@/features/finance/client-finance-tab'
 import { BrandKitTab } from './brand-kit-tab'
 import { ClientFormDialog } from './client-form-dialog'
 import { NotesTab } from './notes-tab'
@@ -67,7 +68,7 @@ export function ClientDetailPage() {
     { id: 'contenido', label: 'Contenido', phase: 5 },
     { id: 'mensajes', label: 'Mensajes', phase: 7 },
     { id: 'metricas', label: 'Métricas', phase: 6 },
-    ...(isAdmin ? [{ id: 'finanzas', label: 'Finanzas', phase: 4 }] : []),
+    ...(isAdmin ? [{ id: 'finanzas', label: 'Finanzas' }] : []),
   ]
   const tab = tabs.some((t) => t.id === params.get('tab')) ? params.get('tab')! : 'brand-kit'
 
@@ -142,6 +143,7 @@ export function ClientDetailPage() {
         <TabsContent value="brand-kit"><BrandKitTab clientId={c.id} /></TabsContent>
         <TabsContent value="proyectos"><ClientProjects clientId={c.id} /></TabsContent>
         <TabsContent value="notas"><NotesTab clientId={c.id} /></TabsContent>
+        {isAdmin && <TabsContent value="finanzas"><ClientFinanceTab clientId={c.id} /></TabsContent>}
         {tabs.filter((t) => t.phase).map((t) => (
           <TabsContent key={t.id} value={t.id}>
             <Card>

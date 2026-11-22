@@ -849,6 +849,7 @@ export type Database = {
           fx_rate: number;
           id: string;
           is_recurring: boolean;
+          parent_expense_id: string | null;
           project_id: string | null;
           receipt_path: string | null;
           recurrence_day: number | null;
@@ -868,6 +869,7 @@ export type Database = {
           fx_rate?: number;
           id?: string;
           is_recurring?: boolean;
+          parent_expense_id?: string | null;
           project_id?: string | null;
           receipt_path?: string | null;
           recurrence_day?: number | null;
@@ -886,6 +888,7 @@ export type Database = {
           fx_rate?: number;
           id?: string;
           is_recurring?: boolean;
+          parent_expense_id?: string | null;
           project_id?: string | null;
           receipt_path?: string | null;
           recurrence_day?: number | null;
@@ -918,6 +921,13 @@ export type Database = {
             columns: ["created_by"];
             isOneToOne: false;
             referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "expenses_parent_expense_id_fkey";
+            columns: ["parent_expense_id"];
+            isOneToOne: false;
+            referencedRelation: "expenses";
             referencedColumns: ["id"];
           },
           {
@@ -1131,15 +1141,17 @@ export type Database = {
           id: string;
           issue_date: string;
           notes: string | null;
-          number: string;
+          number: string | null;
           paid_at: string | null;
           payment_method: string | null;
           pdf_path: string | null;
           project_id: string | null;
           recurring_fee_id: string | null;
           status: Database["public"]["Enums"]["invoice_status"];
+          subtotal: number;
           total: number;
           updated_at: string;
+          vat_rate: number;
         };
         ComputedFields: never;
         Insert: {
@@ -1154,15 +1166,17 @@ export type Database = {
           id?: string;
           issue_date?: string;
           notes?: string | null;
-          number: string;
+          number?: string | null;
           paid_at?: string | null;
           payment_method?: string | null;
           pdf_path?: string | null;
           project_id?: string | null;
           recurring_fee_id?: string | null;
           status?: Database["public"]["Enums"]["invoice_status"];
+          subtotal?: number;
           total?: number;
           updated_at?: string;
+          vat_rate?: number;
         };
         Update: {
           cfe_number?: string | null;
@@ -1176,15 +1190,17 @@ export type Database = {
           id?: string;
           issue_date?: string;
           notes?: string | null;
-          number?: string;
+          number?: string | null;
           paid_at?: string | null;
           payment_method?: string | null;
           pdf_path?: string | null;
           project_id?: string | null;
           recurring_fee_id?: string | null;
           status?: Database["public"]["Enums"]["invoice_status"];
+          subtotal?: number;
           total?: number;
           updated_at?: string;
+          vat_rate?: number;
         };
         Relationships: [
           {
@@ -1639,7 +1655,7 @@ export type Database = {
           id: string;
           issue_date: string;
           notes: string | null;
-          number: string;
+          number: string | null;
           pdf_path: string | null;
           project_id: string | null;
           status: Database["public"]["Enums"]["quote_status"];
@@ -1647,6 +1663,7 @@ export type Database = {
           total: number;
           updated_at: string;
           valid_until: string | null;
+          vat_rate: number;
         };
         ComputedFields: never;
         Insert: {
@@ -1660,7 +1677,7 @@ export type Database = {
           id?: string;
           issue_date?: string;
           notes?: string | null;
-          number: string;
+          number?: string | null;
           pdf_path?: string | null;
           project_id?: string | null;
           status?: Database["public"]["Enums"]["quote_status"];
@@ -1668,6 +1685,7 @@ export type Database = {
           total?: number;
           updated_at?: string;
           valid_until?: string | null;
+          vat_rate?: number;
         };
         Update: {
           client_id?: string;
@@ -1680,7 +1698,7 @@ export type Database = {
           id?: string;
           issue_date?: string;
           notes?: string | null;
-          number?: string;
+          number?: string | null;
           pdf_path?: string | null;
           project_id?: string | null;
           status?: Database["public"]["Enums"]["quote_status"];
@@ -1688,6 +1706,7 @@ export type Database = {
           total?: number;
           updated_at?: string;
           valid_until?: string | null;
+          vat_rate?: number;
         };
         Relationships: [
           {
@@ -2762,6 +2781,8 @@ export type Database = {
       dashboard_summary: { Args: Record<PropertyKey, never>; Returns: Json };
       delete_google_connection: { Args: { p_connection_id: string }; Returns: undefined };
       fx_rate_for: { Args: { p_date?: string }; Returns: number };
+      generate_monthly_fees: { Args: Record<PropertyKey, never>; Returns: number };
+      generate_recurring_expenses: { Args: Record<PropertyKey, never>; Returns: number };
       get_cron_secret: { Args: Record<PropertyKey, never>; Returns: string };
       get_google_refresh_token: { Args: { p_connection_id: string }; Returns: string };
       global_search: {
@@ -2778,6 +2799,9 @@ export type Database = {
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_staff: { Args: Record<PropertyKey, never>; Returns: boolean };
       mark_all_notifications_read: { Args: Record<PropertyKey, never>; Returns: undefined };
+      mark_overdue_invoices: { Args: Record<PropertyKey, never>; Returns: number };
+      month_name_es: { Args: { d: string }; Returns: string };
+      run_finance_jobs: { Args: Record<PropertyKey, never>; Returns: Json };
       save_google_connection: {
         Args: {
           p_calendar_id?: string;

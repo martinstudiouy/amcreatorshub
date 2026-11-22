@@ -1,6 +1,7 @@
-import { CalendarClock, CalendarRange, FolderKanban, ListTodo, LogOut, Monitor, Moon, Plus, Receipt, Search, Sun, User, Users } from 'lucide-react'
+import { CalendarClock, CalendarRange, FolderKanban, HandCoins, ListTodo, LogOut, Monitor, Moon, Plus, Receipt, Search, Sun, User, Users } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ExpenseDialog, InvoiceDialog } from '@/features/finance/dialogs'
 import { EventDialog } from '@/features/agenda/event-dialog'
 import { ClientFormDialog } from '@/features/clients/client-form-dialog'
 import { NewTaskDialog } from '@/features/projects/new-task-dialog'
@@ -15,13 +16,14 @@ import { useTheme } from '@/providers/theme'
 import { NotificationsMenu } from './notifications-menu'
 import { Wordmark } from './wordmark'
 
-type NewKind = 'cliente' | 'proyecto' | 'tarea' | 'evento'
+type NewKind = 'cliente' | 'proyecto' | 'tarea' | 'evento' | 'gasto' | 'cobro'
 const NEW_ITEMS: { label: string; icon: typeof Users; phase: number; admin: boolean; kind?: NewKind }[] = [
   { label: 'Cliente', icon: Users, phase: 2, admin: false, kind: 'cliente' },
   { label: 'Proyecto', icon: FolderKanban, phase: 2, admin: false, kind: 'proyecto' },
   { label: 'Tarea', icon: ListTodo, phase: 2, admin: false, kind: 'tarea' },
   { label: 'Reunión o evento', icon: CalendarClock, phase: 3, admin: false, kind: 'evento' },
-  { label: 'Gasto', icon: Receipt, phase: 4, admin: true },
+  { label: 'Cobro', icon: HandCoins, phase: 4, admin: true, kind: 'cobro' },
+  { label: 'Gasto', icon: Receipt, phase: 4, admin: true, kind: 'gasto' },
   { label: 'Publicación', icon: CalendarRange, phase: 5, admin: false },
 ]
 
@@ -113,6 +115,8 @@ export function Topbar({ onSearch }: { onSearch: () => void }) {
       <ClientFormDialog open={creating === 'cliente'} onOpenChange={close} onSaved={(id) => navigate(`/clientes/${id}`)} />
       <ProjectFormDialog open={creating === 'proyecto'} onOpenChange={close} onSaved={(id) => navigate(`/proyectos/${id}`)} />
       <EventDialog open={creating === 'evento'} onOpenChange={close} />
+      {isAdmin && <InvoiceDialog open={creating === 'cobro'} onOpenChange={close} />}
+      {isAdmin && <ExpenseDialog open={creating === 'gasto'} onOpenChange={close} />}
       <NewTaskDialog open={creating === 'tarea'} onOpenChange={close} onCreated={(id) => navigate(`/proyectos?vista=tablero&tarea=${id}`)} />
     </header>
   )

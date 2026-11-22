@@ -6,14 +6,14 @@ CRM interno de **AM Creators** (Montevideo): clientes, proyectos, contenidos, ag
 - **Idioma:** español rioplatense · **Moneda:** UYU y USD · **Zona horaria:** America/Montevideo · **Fechas:** DD/MM/AAAA
 - **Marca:** azul royal `#0300FF`, Montserrat, isotipo "am" en vector tomado del brandbook
 
-## Estado: Fase 3 de 8
+## Estado: Fase 4 de 8
 
 | Fase | Qué incluye | Estado |
 | --- | --- | --- |
 | 1 | Login, roles, layout, búsqueda Ctrl/Cmd + K, notificaciones, dashboard, configuración, **base de datos completa (34 tablas con RLS)** | ✅ |
 | 2 | Clientes (ficha, brand kit, notas) y proyectos: tablero Kanban, lista, timeline, tareas con checklist, comentarios y adjuntos, plantillas | ✅ |
 | 3 | Agenda (mes, semana, lista), recordatorios internos y sincronización en ambos sentidos con Google Calendar | ✅ |
-| 4 | Finanzas y PDFs | — |
+| 4 | Finanzas (solo admin): cobros, presupuestos, gastos, fees mensuales automáticos, reportes de rentabilidad, proyección y PDFs con la marca | ✅ |
 | 5 | Calendario de contenidos y aprobaciones | — |
 | 6 | Instagram: conexión, métricas y publicación automática | — |
 | 7 | Bandeja unificada WhatsApp + Instagram | — |
@@ -68,6 +68,14 @@ src/
 - El refresh token se guarda en Supabase Vault; la Edge Function `google-oauth` maneja la conexión y `google-sync` sincroniza.
 - Un cron (pg_cron + pg_net) llama a `google-sync` cada 5 minutos; además se sincroniza al guardar un evento.
 - Los recordatorios internos los manda otro cron cada minuto (`send_event_reminders`).
+
+## Finanzas
+
+- Solo el rol admin ve la sección y los montos (RLS en la base, no solo en la pantalla).
+- Numeración automática: `AMC-R-0001` (recibos/cobros) y `AMC-P-0001` (presupuestos), según el prefijo de Configuración → Estudio.
+- Los cobros en dólares guardan el tipo de cambio de su fecha; si falta, la app avisa que hay que cargarlo en Configuración → Tipo de cambio.
+- Un cron diario (`finanzas-diario`, 09:15 UTC) crea los cobros de los fees mensuales, registra los gastos fijos y marca vencidos. También corre al abrir Finanzas.
+- Los PDFs son comprobantes internos: la factura electrónica (CFE) se emite en el proveedor de e-factura y su número se anota en el cobro.
 
 ## Seguridad
 
