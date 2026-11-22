@@ -48,7 +48,9 @@ export function ApprovalDialog({ open, onOpenChange, clientId: initialClient, po
   // Al elegir cliente nuevo, preseleccionamos borradores e ideas con fecha
   useEffect(() => {
     if (!posts || initialPosts?.length) return
-    setSelected(new Set(posts.filter((p) => p.scheduled_at && ['borrador', 'idea'].includes(p.status)).map((p) => p.id)))
+    const pending = posts.filter((p) => ['idea', 'borrador', 'en_aprobacion'].includes(p.status))
+    // Si hay una sola, la marcamos; si hay varias, las que tienen fecha
+    setSelected(new Set((pending.length === 1 ? pending : pending.filter((p) => p.scheduled_at)).map((p) => p.id)))
   }, [posts]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const create = useMutation({
@@ -150,7 +152,10 @@ export function ApprovalDialog({ open, onOpenChange, clientId: initialClient, po
                 )}
               </div>
             )}
-            <div className="mt-6 flex justify-end gap-2">
+            <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
+              {clientId && options.length > 0 && !options.some((p) => selected.has(p.id)) && (
+                <p className="mr-auto text-sm text-warning">Marcá al menos una publicación con el casillero de la izquierda.</p>
+              )}
               <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
               <Button onClick={() => create.mutate()} disabled={!clientId || !options.some((p) => selected.has(p.id)) || create.isPending}>
                 {create.isPending && <LoaderCircle className="animate-spin" />}
