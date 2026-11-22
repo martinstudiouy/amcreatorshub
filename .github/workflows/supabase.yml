@@ -48,10 +48,10 @@ jobs:
         run: |
           npx supabase migration repair --status applied \
             20261120000001 20261120000002 20261120000003 20261121000001 \
-            --remote --password "$SUPABASE_DB_PASSWORD" --yes
+            --remote --password="$SUPABASE_DB_PASSWORD" --yes
 
       - name: Aplicar migraciones nuevas
-        run: npx supabase db push --remote --password "$SUPABASE_DB_PASSWORD" --skip-vault --yes
+        run: npx supabase db push --remote --password="$SUPABASE_DB_PASSWORD" --skip-vault --yes
 
       - name: Cargar las claves de Google en las funciones
         env:
