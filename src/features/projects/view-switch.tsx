@@ -9,6 +9,7 @@ export function ViewSwitch<T extends string>({ value, onChange, options }: { val
           key={o.id}
           role="tab"
           aria-selected={value === o.id}
+          aria-label={o.label}
           onClick={() => onChange(o.id)}
           className={cn(
             'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',

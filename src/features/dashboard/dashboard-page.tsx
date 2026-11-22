@@ -147,7 +147,7 @@ function DashboardContent({ data }: { data: DashboardSummary }) {
                   <li key={p.id} className="flex gap-3 py-3 first:pt-0 last:pb-0">
                     <div className="w-12 shrink-0 text-sm font-semibold tabular-nums">{formatTime(p.scheduled_at)}</div>
                     <div className="min-w-0 flex-1">
-                      <p className="line-clamp-2 text-sm">{p.caption || 'Sin texto'}</p>
+                      <Link to={`/contenidos?post=${p.id}`} className="line-clamp-2 text-sm hover:text-brand">{p.caption || 'Sin texto'}</Link>
                       <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                         <span className="inline-flex items-center gap-1.5">
                           <span className="size-2 rounded-full" style={{ background: p.color_tag ?? 'var(--muted-foreground)' }} />

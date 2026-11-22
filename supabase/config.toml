@@ -436,3 +436,6 @@ verify_jwt = false
 
 [functions.google-sync]
 verify_jwt = false
+
+[functions.approval]
+verify_jwt = false

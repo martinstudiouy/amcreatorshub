@@ -55,8 +55,10 @@ function safeName(name: string) {
   return `${crypto.randomUUID().slice(0, 8)}-${stem || 'archivo'}${ext}`
 }
 
+type Bucket = 'brand-kits' | 'attachments' | 'content'
+
 /** URL temporal (1 hora) para ver o descargar un archivo privado. */
-export async function fileUrl(bucket: 'brand-kits' | 'attachments', path: string | null, download?: string): Promise<string | null> {
+export async function fileUrl(bucket: Bucket, path: string | null, download?: string): Promise<string | null> {
   if (!path) return null
   if (isDemo) return demoFiles.get(path) ?? null
   const { data, error } = await sb().storage.from(bucket).createSignedUrl(path, 3600, download ? { download } : undefined)
@@ -64,7 +66,7 @@ export async function fileUrl(bucket: 'brand-kits' | 'attachments', path: string
   return data.signedUrl
 }
 
-async function upload(bucket: 'brand-kits' | 'attachments', folder: string, file: File): Promise<string> {
+export async function upload(bucket: Bucket, folder: string, file: File): Promise<string> {
   const path = `${folder}/${safeName(file.name)}`
   if (isDemo) {
     demoFiles.set(path, URL.createObjectURL(file))
@@ -75,7 +77,7 @@ async function upload(bucket: 'brand-kits' | 'attachments', folder: string, file
   return path
 }
 
-async function removeFile(bucket: 'brand-kits' | 'attachments', path: string | null) {
+export async function removeFile(bucket: Bucket, path: string | null) {
   if (!path) return
   if (isDemo) {
     demoFiles.delete(path)

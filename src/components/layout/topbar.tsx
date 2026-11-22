@@ -2,6 +2,7 @@ import { CalendarClock, CalendarRange, FolderKanban, HandCoins, ListTodo, LogOut
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ExpenseDialog, InvoiceDialog } from '@/features/finance/dialogs'
+import { PostSheet } from '@/features/content/post-sheet'
 import { EventDialog } from '@/features/agenda/event-dialog'
 import { ClientFormDialog } from '@/features/clients/client-form-dialog'
 import { NewTaskDialog } from '@/features/projects/new-task-dialog'
@@ -11,12 +12,13 @@ import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { roleLabel } from '@/data/labels'
 import { useAuth } from '@/features/auth/auth-context'
+import { todayMvd } from '@/lib/format'
 import { isDemo } from '@/lib/supabase'
 import { useTheme } from '@/providers/theme'
 import { NotificationsMenu } from './notifications-menu'
 import { Wordmark } from './wordmark'
 
-type NewKind = 'cliente' | 'proyecto' | 'tarea' | 'evento' | 'gasto' | 'cobro'
+type NewKind = 'cliente' | 'proyecto' | 'tarea' | 'evento' | 'gasto' | 'cobro' | 'publicacion'
 const NEW_ITEMS: { label: string; icon: typeof Users; phase: number; admin: boolean; kind?: NewKind }[] = [
   { label: 'Cliente', icon: Users, phase: 2, admin: false, kind: 'cliente' },
   { label: 'Proyecto', icon: FolderKanban, phase: 2, admin: false, kind: 'proyecto' },
@@ -24,7 +26,7 @@ const NEW_ITEMS: { label: string; icon: typeof Users; phase: number; admin: bool
   { label: 'Reunión o evento', icon: CalendarClock, phase: 3, admin: false, kind: 'evento' },
   { label: 'Cobro', icon: HandCoins, phase: 4, admin: true, kind: 'cobro' },
   { label: 'Gasto', icon: Receipt, phase: 4, admin: true, kind: 'gasto' },
-  { label: 'Publicación', icon: CalendarRange, phase: 5, admin: false },
+  { label: 'Publicación', icon: CalendarRange, phase: 5, admin: false, kind: 'publicacion' },
 ]
 
 export function Topbar({ onSearch }: { onSearch: () => void }) {
@@ -115,6 +117,7 @@ export function Topbar({ onSearch }: { onSearch: () => void }) {
       <ClientFormDialog open={creating === 'cliente'} onOpenChange={close} onSaved={(id) => navigate(`/clientes/${id}`)} />
       <ProjectFormDialog open={creating === 'proyecto'} onOpenChange={close} onSaved={(id) => navigate(`/proyectos/${id}`)} />
       <EventDialog open={creating === 'evento'} onOpenChange={close} />
+      <PostSheet open={creating === 'publicacion'} draft={{ date: todayMvd() }} onClose={() => setCreating(null)} />
       {isAdmin && <InvoiceDialog open={creating === 'cobro'} onOpenChange={close} />}
       {isAdmin && <ExpenseDialog open={creating === 'gasto'} onOpenChange={close} />}
       <NewTaskDialog open={creating === 'tarea'} onOpenChange={close} onCreated={(id) => navigate(`/proyectos?vista=tablero&tarea=${id}`)} />

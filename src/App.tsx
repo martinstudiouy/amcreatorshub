@@ -10,6 +10,8 @@ import { AgendaPage } from '@/features/agenda/agenda-page'
 import { ClientDetailPage } from '@/features/clients/client-detail-page'
 import { ClientsPage } from '@/features/clients/clients-page'
 import { DashboardPage } from '@/features/dashboard/dashboard-page'
+import { ApprovalPage } from '@/features/content/approval-page'
+import { ContentPage } from '@/features/content/content-page'
 import { FinancePage } from '@/features/finance/finance-page'
 import { ClientPortal } from '@/features/misc/client-portal'
 import { ComingSoon, NotFound } from '@/features/misc/coming-soon'
@@ -32,6 +34,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/privacidad" element={<PrivacyPage />} />
+      <Route path="/aprobar/:token" element={<ApprovalPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/olvide-mi-contrasena" element={<ForgotPasswordPage />} />
       <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
@@ -45,8 +48,9 @@ export default function App() {
         <Route path="proyectos" element={<ProjectsPage />} />
         <Route path="proyectos/:id" element={<ProjectDetailPage />} />
         <Route path="agenda" element={<AgendaPage />} />
+        <Route path="contenidos" element={<ContentPage />} />
         <Route path="finanzas" element={<RequireRole roles={['admin']}><FinancePage /></RequireRole>} />
-        {NAV.filter((n) => n.phase > 4).map((n) => (
+        {NAV.filter((n) => n.phase > 5).map((n) => (
           <Route
             key={n.to}
             path={`${n.to.slice(1)}/*`}

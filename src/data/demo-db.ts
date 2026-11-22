@@ -194,3 +194,79 @@ function demoEvent(
 
 /** Archivos subidos en modo demo: ruta → URL temporal del navegador */
 export const demoFiles = new Map<string, string>()
+
+// ==================================================================== Contenidos (Fase 5)
+/** Imagen de ejemplo (SVG) para las publicaciones de la demo. */
+function demoArt(path: string, from: string, to: string, label: string, w = 1080, h = 1350) {
+  const lines = label.split('\n')
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/><circle cx="${w * 0.78}" cy="${h * 0.22}" r="${w * 0.22}" fill="#fff" fill-opacity=".08"/><circle cx="${w * 0.15}" cy="${h * 0.85}" r="${w * 0.3}" fill="#000" fill-opacity=".08"/>${lines
+    .map((l, i) => `<text x="80" y="${h - 120 - (lines.length - 1 - i) * 92}" font-family="Montserrat, Arial, sans-serif" font-size="78" font-weight="700" fill="#fff">${l}</text>`)
+    .join('')}</svg>`
+  demoFiles.set(path, `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`)
+  return path
+}
+
+const at = (offset: number, hhmm: string) => new Date(`${d(offset)}T${hhmm}:00-03:00`).toISOString()
+const post = (
+  n: number,
+  clientId: number,
+  format: Tables<'content_posts'>['format'],
+  offset: number | null,
+  hhmm: string,
+  caption: string,
+  hashtags: string | null,
+  status: Tables<'content_posts'>['status'],
+): Omit<Tables<'content_posts'>, 'created_at' | 'updated_at'> => ({
+  id: id(n), client_id: id(clientId), social_account_id: null, format, scheduled_at: offset == null ? null : at(offset, hhmm), caption, hashtags, status,
+  ig_media_id: status === 'publicado' ? `1789${n}` : null, ig_permalink: null, published_at: status === 'publicado' && offset != null ? at(offset, hhmm) : null,
+  error_message: null, publish_attempts: 0, grid_position: null, created_by: DEMO_USER_ID, deleted_at: null,
+})
+
+const C1: [string, string] = ['#0300FF', '#020061']
+const C2: [string, string] = ['#16A34A', '#064E3B']
+const C3: [string, string] = ['#9333EA', '#3B0764']
+const media = (n: number, postN: number, colors: [string, string], label: string, position = 0, type: 'imagen' | 'video' = 'imagen', ratio: [number, number] = [1080, 1350]) => ({
+  id: id(n), post_id: id(postN), storage_path: demoArt(`demo/${postN}/${n}.svg`, colors[0], colors[1], label, ratio[0], ratio[1]), media_type: type, position,
+  width: ratio[0], height: ratio[1], duration_s: type === 'video' ? 15 : null, cover_path: null,
+})
+
+export const content = {
+  posts: new DemoTable<Tables<'content_posts'>>([
+    post(111, 1, 'carrusel', 0, '12:30', 'Llegó la carta de verano: 5 bebidas frías para la rambla ☀️ Deslizá y elegí tu favorita.', '#montevideo #cafe #verano', 'programado'),
+    post(112, 2, 'reel', 0, '18:00', 'Clase abierta de reformer: te esperamos el sábado a las 10. Cupos limitados, reservá por DM.', '#pilates #pocitos', 'aprobado'),
+    post(113, 3, 'feed', 0, '20:00', 'Detrás de escena: así nace nuestra nueva etiqueta.', '#vino #uruguay #branding', 'en_aprobacion'),
+    post(114, 1, 'reel', 1, '13:00', 'Brunch de domingo en 15 segundos.', '#brunch #montevideo', 'borrador'),
+    post(115, 1, 'story', 3, '10:00', 'Encuesta: ¿qué torta sumamos a la carta?', null, 'idea'),
+    post(401, 1, 'feed', -6, '12:00', 'Nuevo horario: abrimos todos los días desde las 8.', '#caferambla', 'publicado'),
+    post(402, 1, 'carrusel', -3, '19:00', 'Cómo preparamos nuestro cold brew, paso a paso.', '#coldbrew #cafe', 'publicado'),
+    post(403, 1, 'feed', 5, '12:30', 'Tarde de lluvia, café y medialunas.', '#montevideo', 'aprobado'),
+    post(404, 1, 'reel', 8, '18:30', 'Latte art: el corazón perfecto.', '#latteart', 'borrador'),
+    post(405, 2, 'feed', -4, '09:00', 'Tu espalda te lo va a agradecer: 3 ejercicios para la oficina.', '#pilates #salud', 'publicado'),
+    post(406, 2, 'carrusel', 4, '09:00', 'Conocé al equipo de Pilates Pocitos.', '#pilates #equipo', 'en_aprobacion'),
+    post(407, 2, 'story', 2, '08:00', 'Recordatorio: clase abierta este sábado.', null, 'aprobado'),
+    post(408, 3, 'carrusel', 9, '20:00', 'Presentamos la nueva identidad de Bodega Los Altos.', '#vino #identidadvisual', 'borrador'),
+    post(409, 1, 'feed', null, '12:00', 'Idea: foto del equipo con delantales nuevos.', null, 'idea'),
+    post(410, 2, 'reel', null, '12:00', 'Idea: reel de antes y después de una clase.', null, 'idea'),
+  ]),
+  media: new DemoTable<Tables<'content_media'>>([
+    media(451, 111, C1, 'Carta de\nverano', 0),
+    media(452, 111, ['#020061', '#0300FF'], 'Cold brew\nde naranja', 1),
+    media(453, 111, ['#0300FF', '#000000'], 'Limonada\nde menta', 2),
+    media(454, 112, C2, 'Clase\nabierta', 0, 'video', [1080, 1920]),
+    media(455, 113, C3, 'Detrás de\nescena', 0),
+    media(456, 114, ['#020061', '#0300FF'], 'Brunch\ndomingo', 0, 'video', [1080, 1920]),
+    media(457, 401, ['#000000', '#0300FF'], 'Nuevo\nhorario', 0),
+    media(458, 402, C1, 'Cold brew\npaso a paso', 0),
+    media(459, 403, ['#0300FF', '#5B5BFF'], 'Café y\nmedialunas', 0),
+    media(460, 405, C2, '3 ejercicios', 0),
+    media(461, 406, ['#064E3B', '#16A34A'], 'Nuestro\nequipo', 0),
+    media(462, 407, C2, 'Sábado\n10 h', 0, 'imagen', [1080, 1920]),
+    media(463, 408, C3, 'Nueva\nidentidad', 0),
+  ]),
+  approvals: new DemoTable<Tables<'approvals'>>([
+    {
+      id: id(470), client_id: id(2), token_hash: 'demo-pilates', post_ids: [id(112)], created_by: DEMO_USER_ID,
+      decisions: { [id(112)]: { decision: 'aprobado', comment: '' } }, client_comment: '¡Quedó divino!', expires_at: at(10, '12:00'), decided_at: ago(60 * 26),
+    },
+  ]),
+}

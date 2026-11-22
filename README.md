@@ -6,7 +6,7 @@ CRM interno de **AM Creators** (Montevideo): clientes, proyectos, contenidos, ag
 - **Idioma:** español rioplatense · **Moneda:** UYU y USD · **Zona horaria:** America/Montevideo · **Fechas:** DD/MM/AAAA
 - **Marca:** azul royal `#0300FF`, Montserrat, isotipo "am" en vector tomado del brandbook
 
-## Estado: Fase 4 de 8
+## Estado: Fase 5 de 8
 
 | Fase | Qué incluye | Estado |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ CRM interno de **AM Creators** (Montevideo): clientes, proyectos, contenidos, ag
 | 2 | Clientes (ficha, brand kit, notas) y proyectos: tablero Kanban, lista, timeline, tareas con checklist, comentarios y adjuntos, plantillas | ✅ |
 | 3 | Agenda (mes, semana, lista), recordatorios internos y sincronización en ambos sentidos con Google Calendar | ✅ |
 | 4 | Finanzas (solo admin): cobros, presupuestos, gastos, fees mensuales automáticos, reportes de rentabilidad, proyección y PDFs con la marca | ✅ |
-| 5 | Calendario de contenidos y aprobaciones | — |
+| 5 | Calendario de contenidos (mes, semana, lista y grilla de Instagram, arrastrar y soltar) y aprobación del cliente por link, sin login | ✅ |
 | 6 | Instagram: conexión, métricas y publicación automática | — |
 | 7 | Bandeja unificada WhatsApp + Instagram | — |
 | 8 | Portal de cliente y reportes mensuales | — |
@@ -76,6 +76,14 @@ src/
 - Los cobros en dólares guardan el tipo de cambio de su fecha; si falta, la app avisa que hay que cargarlo en Configuración → Tipo de cambio.
 - Un cron diario (`finanzas-diario`, 09:15 UTC) crea los cobros de los fees mensuales, registra los gastos fijos y marca vencidos. También corre al abrir Finanzas.
 - Los PDFs son comprobantes internos: la factura electrónica (CFE) se emite en el proveedor de e-factura y su número se anota en el cobro.
+
+## Contenidos y aprobaciones
+
+- Los archivos de cada publicación van al bucket privado `content`, en la carpeta `<cliente>/<publicación>/`. Máximo 50 MB por archivo (límite del plan gratis de Supabase).
+- “Pedir aprobación” genera un link `/aprobar/<token>`. En la base solo se guarda el sha256 del token; vence a los 14 días y se responde una sola vez.
+- La página pública habla con la Edge Function `approval` (sin login), que usa `approval_payload` y `approval_submit` y arma links temporales a los archivos.
+- Al responder, las publicaciones aprobadas pasan a “Aprobado”, las que tienen cambios vuelven a “Borrador” con el comentario, y el equipo recibe una notificación.
+- La publicación automática en Instagram llega en la Fase 6.
 
 ## Seguridad
 

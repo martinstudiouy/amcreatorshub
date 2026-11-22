@@ -2760,6 +2760,12 @@ export type Database = {
       };
     };
     Functions: {
+      approval_payload: { Args: { p_token: string }; Returns: Json };
+      approval_submit: {
+        Args: { p_comment: string; p_decisions: Json; p_token: string };
+        Returns: Json;
+      };
+      create_approval: { Args: { p_client_id: string; p_post_ids: string[] }; Returns: string };
       create_project_from_template: {
         Args: {
           p_budget?: number;
