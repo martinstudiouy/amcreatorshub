@@ -14,6 +14,7 @@ import { ClientPortal } from '@/features/misc/client-portal'
 import { ComingSoon, NotFound } from '@/features/misc/coming-soon'
 import { ProjectDetailPage } from '@/features/projects/project-detail-page'
 import { ProjectsPage } from '@/features/projects/projects-page'
+import { PrivacyPage } from '@/features/misc/privacy-page'
 import { SettingsPage } from '@/features/settings/settings-page'
 
 /** El rol cliente solo ve su portal; admin y equipo ven el CRM. */
@@ -29,6 +30,7 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/privacidad" element={<PrivacyPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/olvide-mi-contrasena" element={<ForgotPasswordPage />} />
       <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
