@@ -65,5 +65,16 @@ jobs:
             echo "::warning::Todavía no están GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET y APP_URL: Google Calendar no va a funcionar hasta cargarlos."
           fi
 
+      - name: Cargar las claves de Instagram en las funciones
+        env:
+          INSTAGRAM_APP_ID: ${{ secrets.INSTAGRAM_APP_ID }}
+          INSTAGRAM_APP_SECRET: ${{ secrets.INSTAGRAM_APP_SECRET }}
+        run: |
+          if [ -n "$INSTAGRAM_APP_ID" ] && [ -n "$INSTAGRAM_APP_SECRET" ]; then
+            npx supabase secrets set INSTAGRAM_APP_ID="$INSTAGRAM_APP_ID" INSTAGRAM_APP_SECRET="$INSTAGRAM_APP_SECRET" --yes
+          else
+            echo "::warning::Todavía no están INSTAGRAM_APP_ID e INSTAGRAM_APP_SECRET: Instagram no va a funcionar hasta cargarlos."
+          fi
+
       - name: Publicar las funciones de servidor
         run: npx supabase functions deploy --use-api --yes

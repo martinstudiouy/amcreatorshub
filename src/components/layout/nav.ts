@@ -24,6 +24,6 @@ export const NAV: NavItem[] = [
 ]
 
 /** Última fase construida: las secciones de fases posteriores muestran su número. */
-export const CURRENT_PHASE = 5
+export const CURRENT_PHASE = 6
 
 export const navFor = (role: Role | null) => NAV.filter((n) => role && n.roles.includes(role))

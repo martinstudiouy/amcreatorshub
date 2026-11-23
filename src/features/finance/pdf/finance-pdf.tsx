@@ -21,12 +21,12 @@ Font.register({
 })
 Font.registerHyphenationCallback((w) => [w]) // sin cortar palabras con guiones
 
-const BLUE = '#0300FF'
-const NAVY = '#020061'
-const INK = '#0A0A0A'
-const MUTED = '#6B6B73'
-const LINE = '#E6E6EA'
-const SOFT = '#F5F5F7'
+export const BLUE = '#0300FF'
+export const NAVY = '#020061'
+export const INK = '#0A0A0A'
+export const MUTED = '#6B6B73'
+export const LINE = '#E6E6EA'
+export const SOFT = '#F5F5F7'
 
 const s = StyleSheet.create({
   page: { fontFamily: 'Montserrat', fontSize: 9.5, color: INK, paddingTop: 40, paddingBottom: 64, paddingHorizontal: 44 },
@@ -89,7 +89,7 @@ export interface PdfDoc {
   project_name?: string | null
 }
 
-function Isotipo({ size = 28 }: { size?: number }) {
+export function Isotipo({ size = 28 }: { size?: number }) {
   return (
     <Svg viewBox="0 0 328 207" style={{ width: (size * 328) / 207, height: size }}>
       <Defs>

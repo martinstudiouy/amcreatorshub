@@ -9,12 +9,12 @@ export const SelectValue = SelectPrimitive.Value
 export function SelectTrigger({ className, children, ...props }: React.ComponentProps<typeof SelectPrimitive.Trigger>) {
   return (
     <SelectPrimitive.Trigger
-      className={cn('flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-input bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50', className)}
+      className={cn('flex h-10 w-full items-center justify-between gap-2 whitespace-nowrap rounded-lg border border-input bg-card px-3 text-left text-sm [&>span]:truncate focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50', className)}
       {...props}
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDown className="size-4 text-muted-foreground" />
+        <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )

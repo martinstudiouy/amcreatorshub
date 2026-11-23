@@ -6,7 +6,7 @@ CRM interno de **AM Creators** (Montevideo): clientes, proyectos, contenidos, ag
 - **Idioma:** español rioplatense · **Moneda:** UYU y USD · **Zona horaria:** America/Montevideo · **Fechas:** DD/MM/AAAA
 - **Marca:** azul royal `#0300FF`, Montserrat, isotipo "am" en vector tomado del brandbook
 
-## Estado: Fase 5 de 8
+## Estado: Fase 6 de 8
 
 | Fase | Qué incluye | Estado |
 | --- | --- | --- |
@@ -15,7 +15,7 @@ CRM interno de **AM Creators** (Montevideo): clientes, proyectos, contenidos, ag
 | 3 | Agenda (mes, semana, lista), recordatorios internos y sincronización en ambos sentidos con Google Calendar | ✅ |
 | 4 | Finanzas (solo admin): cobros, presupuestos, gastos, fees mensuales automáticos, reportes de rentabilidad, proyección y PDFs con la marca | ✅ |
 | 5 | Calendario de contenidos (mes, semana, lista y grilla de Instagram, arrastrar y soltar) y aprobación del cliente por link, sin login | ✅ |
-| 6 | Instagram: conexión, métricas y publicación automática | — |
+| 6 | Instagram: conexión por OAuth (Instagram Login), publicación automática, métricas diarias, top 5, mejor horario y reporte mensual en PDF | ✅ |
 | 7 | Bandeja unificada WhatsApp + Instagram | — |
 | 8 | Portal de cliente y reportes mensuales | — |
 
@@ -84,6 +84,16 @@ src/
 - La página pública habla con la Edge Function `approval` (sin login), que usa `approval_payload` y `approval_submit` y arma links temporales a los archivos.
 - Al responder, las publicaciones aprobadas pasan a “Aprobado”, las que tienen cambios vuelven a “Borrador” con el comentario, y el equipo recibe una notificación.
 - La publicación automática en Instagram llega en la Fase 6.
+
+## Instagram
+
+- Usa la **Instagram API con Instagram Login** (`graph.instagram.com`, v25.0): las cuentas tienen que ser profesionales (Empresa o Creador); no hace falta página de Facebook.
+- Permisos: `instagram_business_basic`, `instagram_business_content_publish`, `instagram_business_manage_insights`.
+- Secretos en GitHub: `INSTAGRAM_APP_ID` e `INSTAGRAM_APP_SECRET` (el workflow los copia a Supabase). URL de redirección en Meta: `https://<proyecto>.supabase.co/functions/v1/instagram-oauth`.
+- El token largo (60 días) se guarda en Vault y se renueva solo cuando faltan menos de 15 días. Si no se puede, la cuenta pasa a “Por vencer” o “Desconectada” y aparece un aviso.
+- `instagram-publish` corre cada minuto: arma los contenedores (imagen, video, carrusel, reel o story), espera a que Instagram procese los videos y publica. Reintenta 3 veces los errores pasajeros; si no, marca la publicación con estado Error y el motivo.
+- `instagram-sync` corre todos los días a las 06:10 (Montevideo): seguidores, alcance, visualizaciones, interacciones y clics del día anterior, y métricas de las publicaciones de los últimos 90 días.
+- Las imágenes se convierten a JPG en el navegador al subirlas, porque Instagram solo publica JPG.
 
 ## Seguridad
 

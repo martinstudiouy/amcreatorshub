@@ -219,7 +219,7 @@ const post = (
 ): Omit<Tables<'content_posts'>, 'created_at' | 'updated_at'> => ({
   id: id(n), client_id: id(clientId), social_account_id: null, format, scheduled_at: offset == null ? null : at(offset, hhmm), caption, hashtags, status,
   ig_media_id: status === 'publicado' ? `1789${n}` : null, ig_permalink: null, published_at: status === 'publicado' && offset != null ? at(offset, hhmm) : null,
-  error_message: null, publish_attempts: 0, grid_position: null, created_by: DEMO_USER_ID, deleted_at: null,
+  error_message: null, publish_attempts: 0, grid_position: null, created_by: DEMO_USER_ID, deleted_at: null, ig_container: null, publishing_started_at: null,
 })
 
 const C1: [string, string] = ['#0300FF', '#020061']

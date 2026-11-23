@@ -123,7 +123,7 @@ export async function savePost(input: PostInput, postId?: string, newId?: string
     if (postId) return content.posts.update(postId, input).id
     return content.posts.insert({
       ...input, id: newId, social_account_id: null, ig_media_id: null, ig_permalink: null, published_at: null, error_message: null,
-      publish_attempts: 0, grid_position: null, created_by: DEMO_USER_ID, deleted_at: null,
+      publish_attempts: 0, grid_position: null, created_by: DEMO_USER_ID, deleted_at: null, ig_container: null, publishing_started_at: null,
     }).id
   }
   if (postId) {
@@ -181,7 +181,34 @@ export function readMediaInfo(file: File): Promise<{ type: 'imagen' | 'video'; w
   })
 }
 
-export async function addMedia(post: { id: string; client_id: string }, file: File, position: number): Promise<Media> {
+/** Instagram solo publica imágenes JPG: convertimos PNG, WebP, etc. en el navegador (misma medida, calidad alta). */
+export async function toJpeg(file: File): Promise<File> {
+  if (!file.type.startsWith('image/') || /jpe?g$/i.test(file.type) || file.type === 'image/gif') return file
+  const url = URL.createObjectURL(file)
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image()
+      i.onload = () => resolve(i)
+      i.onerror = () => reject(new Error(`No pudimos leer "${file.name}". Exportala como JPG y volvé a subirla.`))
+      i.src = url
+    })
+    const canvas = document.createElement('canvas')
+    canvas.width = img.naturalWidth
+    canvas.height = img.naturalHeight
+    const ctx = canvas.getContext('2d')!
+    ctx.fillStyle = '#FFFFFF' // las transparencias quedan en blanco
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.drawImage(img, 0, 0)
+    const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', 0.92))
+    if (!blob) throw new Error(`No pudimos convertir "${file.name}" a JPG.`)
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' })
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
+export async function addMedia(post: { id: string; client_id: string }, original: File, position: number): Promise<Media> {
+  const file = await toJpeg(original)
   const info = await readMediaInfo(file)
   // La primera carpeta es el cliente: así el portal del cliente (Fase 8) puede leer sus archivos.
   const path = await upload('content', `${post.client_id}/${post.id}`, file)

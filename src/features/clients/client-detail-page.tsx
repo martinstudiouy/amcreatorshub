@@ -22,6 +22,7 @@ import { ProjectCard } from '@/features/projects/project-card'
 import { ProjectFormDialog } from '@/features/projects/project-form-dialog'
 import { formatDate, formatMoney } from '@/lib/format'
 import { invalidateCrm } from '@/lib/invalidate'
+import { ClientMetricsTab } from '@/features/metrics/metrics-page'
 import { ClientContentTab } from '@/features/content/client-content-tab'
 import { ClientFinanceTab } from '@/features/finance/client-finance-tab'
 import { BrandKitTab } from './brand-kit-tab'
@@ -68,7 +69,7 @@ export function ClientDetailPage() {
     { id: 'notas', label: 'Notas' },
     { id: 'contenido', label: 'Contenido' },
     { id: 'mensajes', label: 'Mensajes', phase: 7 },
-    { id: 'metricas', label: 'Métricas', phase: 6 },
+    { id: 'metricas', label: 'Métricas' },
     ...(isAdmin ? [{ id: 'finanzas', label: 'Finanzas' }] : []),
   ]
   const tab = tabs.some((t) => t.id === params.get('tab')) ? params.get('tab')! : 'brand-kit'
@@ -145,6 +146,7 @@ export function ClientDetailPage() {
         <TabsContent value="proyectos"><ClientProjects clientId={c.id} /></TabsContent>
         <TabsContent value="notas"><NotesTab clientId={c.id} /></TabsContent>
         <TabsContent value="contenido"><ClientContentTab clientId={c.id} /></TabsContent>
+        <TabsContent value="metricas"><ClientMetricsTab clientId={c.id} brandName={c.brand_name} /></TabsContent>
         {isAdmin && <TabsContent value="finanzas"><ClientFinanceTab clientId={c.id} /></TabsContent>}
         {tabs.filter((t) => t.phase).map((t) => (
           <TabsContent key={t.id} value={t.id}>

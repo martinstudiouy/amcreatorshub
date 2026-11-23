@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, ChevronLeft, ChevronRight, Copy, LoaderCircle, MessageSquareWarning, Send, ThumbsUp, Trash2, Upload, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
 import { toast } from 'sonner'
+import { ChannelIcon } from '@/components/common/channel-icon'
 import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,6 +21,7 @@ import {
   removeMedia,
   reorderMedia,
   savePost,
+  updatePost,
   type Decision,
   type Media,
   type Post,
@@ -27,6 +29,7 @@ import {
   type PostStatus,
 } from '@/data/content'
 import { listClients } from '@/data/crm'
+import { listAccounts, publishNow } from '@/data/instagram'
 import { formatDateTime, timeAgo, todayMvd } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { localDate, localTime, toIso } from '@/features/agenda/dates'
@@ -178,6 +181,8 @@ function PostForm({ post, draft, onClose, onRequestApproval }: { post?: Post; dr
         status,
       }
       const id = await savePost(input, post?.id, post ? undefined : crypto.randomUUID())
+      // Al (re)programar, se limpian los intentos anteriores
+      if (post && status === 'programado' && (post.status !== 'programado' || post.error_message)) await updatePost(id, { publish_attempts: 0, error_message: null, ig_container: null })
 
       // Archivos quitados
       const keep = new Set(items.filter((i) => i.kind === 'existing').map((i) => i.key))
@@ -241,9 +246,7 @@ function PostForm({ post, draft, onClose, onRequestApproval }: { post?: Post; dr
         {latest && !latest.decided_at && post?.status === 'en_aprobacion' && (
           <p className="rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">Esperando la respuesta del cliente. Link enviado {timeAgo(latest.created_at)}.</p>
         )}
-        {post?.status === 'error' && post.error_message && (
-          <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">No se pudo publicar: {post.error_message}</p>
-        )}
+        <InstagramBox post={post} clientId={clientId} dirty={items.some((i) => i.kind === 'new')} onDone={onClose} />
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
@@ -303,7 +306,7 @@ function PostForm({ post, draft, onClose, onRequestApproval }: { post?: Post; dr
             {date ? (
               <>
                 Hora de Montevideo.{' '}
-                <button type="button" className="text-brand hover:underline" onClick={() => setDate('')} disabled={locked}>Quitar fecha</button>
+                {!locked && <button type="button" className="text-brand hover:underline" onClick={() => setDate('')}>Quitar fecha</button>}
               </>
             ) : (
               'Sin fecha queda como idea, en la bandeja de ideas del calendario.'
@@ -383,8 +386,8 @@ function PostForm({ post, draft, onClose, onRequestApproval }: { post?: Post; dr
             ))}
           </ul>
         )}
-        {status === 'programado' && (
-          <p className="text-xs text-muted-foreground">La publicación automática en Instagram se activa en la Fase 6. Hasta entonces, “Programado” sirve para organizarte.</p>
+        {status === 'programado' && post?.status !== 'programado' && (
+          <p className="text-xs text-muted-foreground">Al guardar como “Programado”, se publica sola en Instagram a la fecha y hora indicadas.</p>
         )}
         {error && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>}
       </div>
@@ -449,5 +452,78 @@ function PostForm({ post, draft, onClose, onRequestApproval }: { post?: Post; dr
         />
       )}
     </>
+  )
+}
+
+/** Estado de la publicación en Instagram: cuenta, publicar ahora, error y link. */
+function InstagramBox({ post, clientId, dirty, onDone }: { post?: Post; clientId: string; dirty: boolean; onDone: () => void }) {
+  const qc = useQueryClient()
+  const { data: accounts } = useQuery({ queryKey: ['ig-accounts'], queryFn: listAccounts })
+  const [confirm, setConfirm] = useState(false)
+  const [busy, setBusy] = useState(false)
+  if (!clientId || !accounts) return null
+  const acc = accounts.find((a) => (post?.social_account_id ? a.id === post.social_account_id : a.client_id === clientId))
+
+  if (post?.status === 'publicado')
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-success/40 bg-success/8 px-3 py-2 text-sm">
+        <ChannelIcon channel="instagram" className="text-success" />
+        <span className="flex-1">Publicada{acc ? ` en @${acc.username}` : ''}{post.published_at ? ` el ${formatDateTime(post.published_at)}` : ''}.</span>
+        {post.ig_permalink && <a href={post.ig_permalink} target="_blank" rel="noreferrer" className="font-medium text-brand hover:underline">Ver en Instagram</a>}
+      </div>
+    )
+
+  const canPublish = !!post && !!acc && acc.status !== 'desconectada' && ['aprobado', 'programado', 'error'].includes(post.status) && post.media.length > 0
+  async function run() {
+    setBusy(true)
+    const id = toast.loading('Publicando en Instagram…')
+    try {
+      const r = await publishNow(post!.id)
+      toast.success(r === 'publicado' ? '¡Publicada en Instagram!' : 'Instagram está procesando el video. Se publica en unos minutos.', { id })
+      invalidateContent(qc)
+      onDone()
+    } catch (e) {
+      toast.error(friendlyError(e), { id, duration: 10_000 })
+      invalidateContent(qc)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className={cn('rounded-lg border px-3 py-2.5 text-sm', post?.status === 'error' ? 'border-destructive/40 bg-destructive/5' : 'bg-muted/40')}>
+      <div className="flex flex-wrap items-center gap-2">
+        <ChannelIcon channel="instagram" className="text-muted-foreground" />
+        <span className="flex-1">
+          {!acc ? (
+            <>Este cliente no tiene Instagram conectado: se puede planificar, pero no se publica sola. Conectalo en su ficha → Métricas.</>
+          ) : acc.status === 'desconectada' ? (
+            <span className="text-destructive">@{acc.username} está desconectada. Reconectala en Configuración → Integraciones para publicar.</span>
+          ) : (
+            <>Se publica en <strong>@{acc.username}</strong>{post?.status === 'programado' ? ' a la hora programada.' : ' cuando esté “Programado”.'}</>
+          )}
+        </span>
+        {canPublish && (
+          <Button size="sm" variant={post!.status === 'error' ? 'default' : 'outline'} onClick={() => setConfirm(true)} disabled={busy || dirty} title={dirty ? 'Guardá los archivos nuevos antes de publicar' : undefined}>
+            {busy && <LoaderCircle className="animate-spin" />}
+            {post!.status === 'error' ? 'Reintentar ahora' : 'Publicar ahora'}
+          </Button>
+        )}
+      </div>
+      {post?.error_message && (post.status === 'error' || post.status === 'programado') && (
+        <p className={cn('mt-2 text-xs', post.status === 'error' ? 'text-destructive' : 'text-warning')}>
+          {post.status === 'error' ? 'No se pudo publicar: ' : 'Último intento falló (se reintenta solo): '}
+          {post.error_message}
+        </p>
+      )}
+      <ConfirmDialog
+        open={confirm}
+        onOpenChange={setConfirm}
+        title="¿Publicar ahora en Instagram?"
+        description={`Se publica ya en @${acc?.username}, con el texto y los archivos guardados. No se puede deshacer desde acá.`}
+        confirmLabel="Publicar"
+        onConfirm={run}
+      />
+    </div>
   )
 }

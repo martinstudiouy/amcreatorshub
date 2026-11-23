@@ -12,6 +12,7 @@ import { ClientsPage } from '@/features/clients/clients-page'
 import { DashboardPage } from '@/features/dashboard/dashboard-page'
 import { ApprovalPage } from '@/features/content/approval-page'
 import { ContentPage } from '@/features/content/content-page'
+import { MetricsPage } from '@/features/metrics/metrics-page'
 import { FinancePage } from '@/features/finance/finance-page'
 import { ClientPortal } from '@/features/misc/client-portal'
 import { ComingSoon, NotFound } from '@/features/misc/coming-soon'
@@ -49,8 +50,9 @@ export default function App() {
         <Route path="proyectos/:id" element={<ProjectDetailPage />} />
         <Route path="agenda" element={<AgendaPage />} />
         <Route path="contenidos" element={<ContentPage />} />
+        <Route path="metricas" element={<MetricsPage />} />
         <Route path="finanzas" element={<RequireRole roles={['admin']}><FinancePage /></RequireRole>} />
-        {NAV.filter((n) => n.phase > 5).map((n) => (
+        {NAV.filter((n) => n.phase > 6).map((n) => (
           <Route
             key={n.to}
             path={`${n.to.slice(1)}/*`}

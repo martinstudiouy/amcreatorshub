@@ -3,7 +3,6 @@ import { CalendarClock, CircleAlert, LoaderCircle, MessageCircle, RefreshCw, Unp
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
-import { ChannelIcon } from '@/components/common/channel-icon'
 import { ConfirmDialog } from '@/components/common/confirm-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,9 +11,9 @@ import { disconnectGoogle, getGoogleStatus, startGoogleConnect, syncGoogleNow } 
 import { friendlyError } from '@/data/api'
 import { timeAgo } from '@/lib/format'
 import { isDemo } from '@/lib/supabase'
+import { InstagramCard } from '@/features/metrics/instagram-accounts'
 
 const LATER = [
-  { name: 'Instagram', desc: 'Publicación automática y métricas de tu cuenta y las de tus clientes.', phase: 6, icon: <ChannelIcon channel="instagram" className="size-5" /> },
   { name: 'WhatsApp Business', desc: 'Bandeja unificada, respuestas rápidas y recordatorios a clientes.', phase: 7, icon: <MessageCircle className="size-5" /> },
 ]
 
@@ -22,6 +21,7 @@ export function IntegrationsTab() {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <GoogleCalendarCard />
+      <InstagramCard />
       {LATER.map((i) => (
         <Card key={i.name} className="flex flex-col gap-3 p-5">
           <div className="flex items-center justify-between">

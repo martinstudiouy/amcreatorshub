@@ -506,10 +506,12 @@ export type Database = {
           grid_position: number | null;
           hashtags: string | null;
           id: string;
+          ig_container: Json | null;
           ig_media_id: string | null;
           ig_permalink: string | null;
           publish_attempts: number;
           published_at: string | null;
+          publishing_started_at: string | null;
           scheduled_at: string | null;
           social_account_id: string | null;
           status: Database["public"]["Enums"]["post_status"];
@@ -527,10 +529,12 @@ export type Database = {
           grid_position?: number | null;
           hashtags?: string | null;
           id?: string;
+          ig_container?: Json | null;
           ig_media_id?: string | null;
           ig_permalink?: string | null;
           publish_attempts?: number;
           published_at?: string | null;
+          publishing_started_at?: string | null;
           scheduled_at?: string | null;
           social_account_id?: string | null;
           status?: Database["public"]["Enums"]["post_status"];
@@ -547,10 +551,12 @@ export type Database = {
           grid_position?: number | null;
           hashtags?: string | null;
           id?: string;
+          ig_container?: Json | null;
           ig_media_id?: string | null;
           ig_permalink?: string | null;
           publish_attempts?: number;
           published_at?: string | null;
+          publishing_started_at?: string | null;
           scheduled_at?: string | null;
           social_account_id?: string | null;
           status?: Database["public"]["Enums"]["post_status"];
@@ -955,6 +961,7 @@ export type Database = {
       };
       ig_metrics_daily: {
         Row: {
+          accounts_engaged: number | null;
           created_at: string;
           date: string;
           engagement_rate: number | null;
@@ -971,6 +978,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          accounts_engaged?: number | null;
           created_at?: string;
           date: string;
           engagement_rate?: number | null;
@@ -986,6 +994,7 @@ export type Database = {
           views?: number | null;
         };
         Update: {
+          accounts_engaged?: number | null;
           created_at?: string;
           date?: string;
           engagement_rate?: number | null;
@@ -1018,7 +1027,9 @@ export type Database = {
           created_at: string;
           id: string;
           ig_media_id: string;
+          interactions: number | null;
           likes: number | null;
+          media_product_type: string | null;
           media_type: string | null;
           permalink: string | null;
           posted_at: string | null;
@@ -1027,6 +1038,7 @@ export type Database = {
           shares: number | null;
           snapshot_date: string;
           social_account_id: string;
+          thumbnail_url: string | null;
           updated_at: string;
           views: number | null;
         };
@@ -1038,7 +1050,9 @@ export type Database = {
           created_at?: string;
           id?: string;
           ig_media_id: string;
+          interactions?: number | null;
           likes?: number | null;
+          media_product_type?: string | null;
           media_type?: string | null;
           permalink?: string | null;
           posted_at?: string | null;
@@ -1047,6 +1061,7 @@ export type Database = {
           shares?: number | null;
           snapshot_date: string;
           social_account_id: string;
+          thumbnail_url?: string | null;
           updated_at?: string;
           views?: number | null;
         };
@@ -1057,7 +1072,9 @@ export type Database = {
           created_at?: string;
           id?: string;
           ig_media_id?: string;
+          interactions?: number | null;
           likes?: number | null;
+          media_product_type?: string | null;
           media_type?: string | null;
           permalink?: string | null;
           posted_at?: string | null;
@@ -1066,6 +1083,7 @@ export type Database = {
           shares?: number | null;
           snapshot_date?: string;
           social_account_id?: string;
+          thumbnail_url?: string | null;
           updated_at?: string;
           views?: number | null;
         };
@@ -1900,12 +1918,16 @@ export type Database = {
           created_at: string;
           display_name: string | null;
           external_id: string;
+          followers_count: number | null;
           id: string;
           last_error: string | null;
+          last_synced_at: string | null;
           platform: Database["public"]["Enums"]["channel_type"];
+          profile_picture_url: string | null;
           scopes: string[];
           status: Database["public"]["Enums"]["account_status"];
           token_expires_at: string | null;
+          token_refreshed_at: string | null;
           updated_at: string;
           username: string | null;
           vault_secret_id: string | null;
@@ -1918,12 +1940,16 @@ export type Database = {
           created_at?: string;
           display_name?: string | null;
           external_id: string;
+          followers_count?: number | null;
           id?: string;
           last_error?: string | null;
+          last_synced_at?: string | null;
           platform: Database["public"]["Enums"]["channel_type"];
+          profile_picture_url?: string | null;
           scopes?: string[];
           status?: Database["public"]["Enums"]["account_status"];
           token_expires_at?: string | null;
+          token_refreshed_at?: string | null;
           updated_at?: string;
           username?: string | null;
           vault_secret_id?: string | null;
@@ -1935,12 +1961,16 @@ export type Database = {
           created_at?: string;
           display_name?: string | null;
           external_id?: string;
+          followers_count?: number | null;
           id?: string;
           last_error?: string | null;
+          last_synced_at?: string | null;
           platform?: Database["public"]["Enums"]["channel_type"];
+          profile_picture_url?: string | null;
           scopes?: string[];
           status?: Database["public"]["Enums"]["account_status"];
           token_expires_at?: string | null;
+          token_refreshed_at?: string | null;
           updated_at?: string;
           username?: string | null;
           vault_secret_id?: string | null;
@@ -2765,6 +2795,37 @@ export type Database = {
         Args: { p_comment: string; p_decisions: Json; p_token: string };
         Returns: Json;
       };
+      claim_posts_to_publish: {
+        Args: { p_post_id?: string };
+        Returns: {
+          caption: string | null;
+          client_id: string;
+          created_at: string;
+          created_by: string | null;
+          deleted_at: string | null;
+          error_message: string | null;
+          format: Database["public"]["Enums"]["post_format"];
+          grid_position: number | null;
+          hashtags: string | null;
+          id: string;
+          ig_container: Json | null;
+          ig_media_id: string | null;
+          ig_permalink: string | null;
+          publish_attempts: number;
+          published_at: string | null;
+          publishing_started_at: string | null;
+          scheduled_at: string | null;
+          social_account_id: string | null;
+          status: Database["public"]["Enums"]["post_status"];
+          updated_at: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "content_posts";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       create_approval: { Args: { p_client_id: string; p_post_ids: string[] }; Returns: string };
       create_project_from_template: {
         Args: {
@@ -2786,11 +2847,16 @@ export type Database = {
       };
       dashboard_summary: { Args: Record<PropertyKey, never>; Returns: Json };
       delete_google_connection: { Args: { p_connection_id: string }; Returns: undefined };
+      disconnect_social_account: {
+        Args: { p_account_id: string; p_reason?: string };
+        Returns: undefined;
+      };
       fx_rate_for: { Args: { p_date?: string }; Returns: number };
       generate_monthly_fees: { Args: Record<PropertyKey, never>; Returns: number };
       generate_recurring_expenses: { Args: Record<PropertyKey, never>; Returns: number };
       get_cron_secret: { Args: Record<PropertyKey, never>; Returns: string };
       get_google_refresh_token: { Args: { p_connection_id: string }; Returns: string };
+      get_social_token: { Args: { p_account_id: string }; Returns: string };
       global_search: {
         Args: { q: string };
         Returns: {
@@ -2817,9 +2883,30 @@ export type Database = {
         };
         Returns: string;
       };
+      save_instagram_account: {
+        Args: {
+          p_account_type: string;
+          p_client_id: string;
+          p_expires_at: string;
+          p_external_id: string;
+          p_followers: number;
+          p_name: string;
+          p_picture: string;
+          p_scopes: string[];
+          p_token: string;
+          p_user: string;
+          p_username: string;
+        };
+        Returns: string;
+      };
       send_event_reminders: { Args: Record<PropertyKey, never>; Returns: number };
       setup_google_sync_cron: { Args: { p_project_url: string }; Returns: undefined };
+      setup_instagram_crons: { Args: { p_project_url?: string }; Returns: undefined };
       today_mvd: { Args: Record<PropertyKey, never>; Returns: string };
+      update_social_token: {
+        Args: { p_account_id: string; p_expires_at: string; p_token: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       account_status: "conectada" | "por_vencer" | "desconectada";

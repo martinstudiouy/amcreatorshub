@@ -439,3 +439,12 @@ verify_jwt = false
 
 [functions.approval]
 verify_jwt = false
+
+[functions.instagram-oauth]
+verify_jwt = false
+
+[functions.instagram-publish]
+verify_jwt = false
+
+[functions.instagram-sync]
+verify_jwt = false
