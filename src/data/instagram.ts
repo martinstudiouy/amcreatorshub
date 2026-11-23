@@ -1,3 +1,4 @@
+import { functionErrorMessage } from './api'
 // Fase 6: cuentas de Instagram, métricas y publicación automática.
 import { isDemo, sb } from '@/lib/supabase'
 import type { Tables } from '@/types/database'
@@ -18,8 +19,7 @@ function check<T>(res: { data: T | null; error: unknown }): T {
 async function invoke<T>(name: string, body: Record<string, unknown>): Promise<T> {
   const { data, error } = await sb().functions.invoke(name, { body })
   if (error) {
-    const ctx = (error as { context?: Response }).context
-    const msg = ctx ? await ctx.json().then((j: { error?: string }) => j.error).catch(() => null) : null
+    const msg = await functionErrorMessage(error)
     throw new Error(msg || 'No pudimos conectarnos con el servidor. Probá de nuevo en un rato.')
   }
   return data as T

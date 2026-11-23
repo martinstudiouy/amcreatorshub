@@ -1,3 +1,4 @@
+import { functionErrorMessage } from './api'
 // Fase 5: calendario de contenidos y aprobaciones del cliente.
 // Igual que el resto: cada función va a Supabase o, en modo demo, a la base en memoria.
 import { isDemo, sb } from '@/lib/supabase'
@@ -301,8 +302,7 @@ export class ApprovalLinkError extends Error {
 async function callApproval<T>(body: Record<string, unknown>): Promise<T> {
   const { data, error } = await sb().functions.invoke('approval', { body })
   if (error) {
-    const ctx = (error as { context?: Response }).context
-    const msg = ctx ? await ctx.json().then((j: { error?: string }) => j.error).catch(() => null) : null
+    const msg = await functionErrorMessage(error)
     if (msg === 'no_existe' || msg === 'vencido') throw new ApprovalLinkError(msg)
     throw new Error(msg || 'No pudimos conectarnos. Revisá tu conexión y probá de nuevo.')
   }

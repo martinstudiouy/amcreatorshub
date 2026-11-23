@@ -1,8 +1,8 @@
 // Cron diario (06:10 de Montevideo): renueva tokens y guarda las métricas de todas las cuentas.
-import { adminClient, corsHeaders, getCaller, json } from '../_shared/http.ts'
+import { adminClient, corsHeaders, getCaller, json, serve } from '../_shared/http.ts'
 import { IgError, markDisconnected, notifyStaff, syncAccount, type Account } from '../_shared/instagram.ts'
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   const admin = adminClient()
   const caller = await getCaller(req, admin)

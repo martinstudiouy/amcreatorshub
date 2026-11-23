@@ -1,14 +1,14 @@
 // Publicación automática en Instagram.
 // · Cron cada minuto: publica lo que está "Programado" y ya llegó a su hora.
 // · POST { postId } desde el CRM (equipo o admin): "Publicar ahora".
-import { adminClient, corsHeaders, getCaller, json } from '../_shared/http.ts'
+import { adminClient, corsHeaders, getCaller, json, serve } from '../_shared/http.ts'
 import { IgError, getToken, ig, markDisconnected, notifyStaff, publishStep, type Account, type MediaRow, type PostRow } from '../_shared/instagram.ts'
 
 type Result = { id: string; status: string; message?: string }
 const MAX_ATTEMPTS = 3
 const POST_FIELDS = 'id, client_id, social_account_id, format, caption, hashtags, publish_attempts, ig_container, created_by'
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   const started = Date.now()
   const admin = adminClient()

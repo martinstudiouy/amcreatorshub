@@ -2,7 +2,7 @@
 // Página pública de aprobación: el cliente entra con un link (token único), sin login.
 //   { action: "get", token }                         → publicaciones con links temporales a los archivos
 //   { action: "submit", token, decisions, comment }  → guarda la respuesta y avisa al equipo
-import { adminClient, corsHeaders, json } from '../_shared/http.ts'
+import { adminClient, corsHeaders, json, serve } from '../_shared/http.ts'
 
 const TOKEN_RE = /^[a-f0-9]{48}$/
 const URL_TTL = 60 * 60 * 6 // 6 horas
@@ -10,7 +10,7 @@ const URL_TTL = 60 * 60 * 6 // 6 horas
 type Media = { storage_path: string; media_type: string; cover_path: string | null; url?: string | null; cover_url?: string | null }
 type Payload = { error?: string; posts?: { media: Media[] }[] }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (req.method !== 'POST') return json({ error: 'Método no permitido' }, 405)
 

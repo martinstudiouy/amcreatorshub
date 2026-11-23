@@ -198,3 +198,17 @@ export async function deleteExchangeRate(id: string) {
   }
   check(await sb().from('exchange_rates').delete().eq('id', id))
 }
+
+/** Mensaje legible de un error de Edge Function (respuesta con error, sin conexión o caída). */
+export async function functionErrorMessage(error: unknown): Promise<string | null> {
+  const ctx = (error as { context?: unknown }).context
+  if (ctx && typeof (ctx as Response).json === 'function') {
+    try {
+      const j = (await (ctx as Response).clone().json()) as { error?: string; message?: string }
+      return j.error ?? j.message ?? null
+    } catch {
+      return null
+    }
+  }
+  return null
+}

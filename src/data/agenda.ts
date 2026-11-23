@@ -1,3 +1,4 @@
+import { functionErrorMessage } from './api'
 // Fase 3: agenda y Google Calendar.
 import { isDemo, sb } from '@/lib/supabase'
 import type { Tables, TablesInsert, TablesUpdate } from '@/types/database'
@@ -97,8 +98,7 @@ async function invoke<T>(fn: string, body: unknown): Promise<T> {
   const { data, error } = await sb().functions.invoke(fn, { body: body as Record<string, unknown> })
   if (error) {
     // Intentamos leer el mensaje que devolvió la función
-    const ctx = (error as { context?: Response }).context
-    const msg = ctx ? await ctx.json().then((j: { error?: string }) => j.error).catch(() => null) : null
+    const msg = await functionErrorMessage(error)
     throw new Error(msg || 'No pudimos comunicarnos con el servidor. Revisá que las funciones estén publicadas.')
   }
   return data as T

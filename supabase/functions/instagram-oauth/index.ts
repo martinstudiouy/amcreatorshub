@@ -3,7 +3,7 @@
 // GET  ?code=…&state=…                       → Instagram vuelve acá; guarda el token en Vault y redirige al CRM
 // POST { action: 'disconnect', accountId }   → borra el token (solo admin); se conserva el historial
 // POST { action: 'sync', accountId? }        → actualiza métricas ahora (equipo o admin)
-import { adminClient, corsHeaders, env, getCaller, json, sign, verify } from '../_shared/http.ts'
+import { adminClient, corsHeaders, env, getCaller, json, sign, verify, serve } from '../_shared/http.ts'
 import { IG_SCOPES, IgError, exchangeCode, ig, markDisconnected, syncAccount, type Account } from '../_shared/instagram.ts'
 
 const redirectUri = () => `${env('SUPABASE_URL')}/functions/v1/instagram-oauth`
@@ -19,7 +19,7 @@ function backToApp(result: 'ok' | 'error', reason?: string, clientId?: string) {
 
 const ACCOUNT_FIELDS = 'id, client_id, external_id, username, status, token_expires_at, token_refreshed_at, last_synced_at'
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   const admin = adminClient()
 
@@ -104,6 +104,8 @@ Deno.serve(async (req) => {
   if (caller.role !== 'admin') return json({ error: 'Solo un admin puede conectar o desconectar cuentas.' }, 403)
 
   if (body.action === 'start') {
+    if (!Deno.env.get('INSTAGRAM_APP_ID') || !Deno.env.get('INSTAGRAM_APP_SECRET'))
+      return json({ error: 'Todavía falta configurar la app de Instagram en Meta y cargar sus claves (los pasos de la Fase 6). Cuando estén, este botón funciona.' }, 503)
     const clientId = typeof body.clientId === 'string' && /^[0-9a-f-]{36}$/.test(body.clientId) ? body.clientId : ''
     const state = await sign(`${caller.userId}|${clientId}|${Date.now() + 15 * 60_000}`, env('INSTAGRAM_APP_SECRET'))
     const url = new URL('https://www.instagram.com/oauth/authorize')

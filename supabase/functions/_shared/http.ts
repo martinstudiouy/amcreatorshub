@@ -11,6 +11,21 @@ export function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 }
 
+/**
+ * Igual que Deno.serve, pero si algo falla devuelve el error en JSON y con CORS.
+ * Sin esto, el navegador ve una respuesta sin CORS y solo informa "no se pudo conectar".
+ */
+export function serve(handler: (req: Request) => Response | Promise<Response>) {
+  Deno.serve(async (req) => {
+    try {
+      return await handler(req)
+    } catch (e) {
+      console.error(e)
+      return json({ error: e instanceof Error ? e.message : 'Error inesperado en el servidor.' }, 500)
+    }
+  })
+}
+
 export function env(name: string): string {
   const v = Deno.env.get(name)
   if (!v) throw new Error(`Falta configurar el secreto ${name} en Supabase.`)

@@ -2,7 +2,7 @@
 // POST { action: 'start' }      → devuelve el link para autorizar en Google (solo admin)
 // GET  ?code=…&state=…          → Google vuelve acá; guarda el token en Vault y redirige al CRM
 // POST { action: 'disconnect' } → revoca el acceso y borra el token (solo admin)
-import { adminClient, corsHeaders, env, getCaller, json, sign, verify } from '../_shared/http.ts'
+import { adminClient, corsHeaders, env, getCaller, json, sign, verify, serve } from '../_shared/http.ts'
 import { GOOGLE_SCOPES, syncStudio } from '../_shared/google.ts'
 
 const redirectUri = () => `${env('SUPABASE_URL')}/functions/v1/google-oauth`
@@ -16,7 +16,7 @@ function backToApp(result: 'ok' | 'error', reason?: string) {
   return Response.redirect(url.toString(), 302)
 }
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   const admin = adminClient()
 
