@@ -25,7 +25,7 @@ async function invoke<T>(name: string, body: Record<string, unknown>): Promise<T
   return data as T
 }
 
-const DEMO_MSG = 'En la demo no se puede conectar Instagram de verdad. En la app real te lleva a Instagram para autorizar.'
+const DEMO_MSG = 'En la demo no se puede conectar Instagram de verdad. En la app real te lleva a Meta para autorizar.'
 
 // ================================================================ Cuentas
 export async function listAccounts(): Promise<SocialAccount[]> {

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CircleAlert, LoaderCircle, Plus, RefreshCw, Unplug } from 'lucide-react'
+import { CircleAlert, Link2, LoaderCircle, Plus, RefreshCw, Unplug } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -56,7 +56,7 @@ export function useConnectInstagram() {
 
 export function AccountStatus({ a }: { a: SocialAccount }) {
   if (a.status === 'desconectada') return <Badge variant="danger">Desconectada</Badge>
-  if (a.status === 'por_vencer') return <Badge variant="warning">Vence {formatDate(a.token_expires_at)}</Badge>
+  if (a.status === 'por_vencer') return <Badge variant="warning">{a.token_expires_at ? `Vence ${formatDate(a.token_expires_at)}` : 'Revisar acceso'}</Badge>
   return <Badge variant="success">Conectada</Badge>
 }
 
@@ -79,6 +79,14 @@ export function InstagramCard() {
   const connect = useConnectInstagram()
   const [target, setTarget] = useState<string>('propia')
   const [disconnecting, setDisconnecting] = useState<SocialAccount | null>(null)
+  const copyLink = useMutation({
+    mutationFn: (clientId: string) => startInstagramConnect(clientId),
+    onSuccess: async (url) => {
+      await navigator.clipboard.writeText(url)
+      toast.success('Link copiado. Mandáselo al cliente: lo abre, inicia sesión en Meta y marca su cuenta de Instagram.', { duration: 8000 })
+    },
+    onError: (e) => toast.error(friendlyError(e), { duration: 8000 }),
+  })
   const sync = useMutation({
     mutationFn: (id?: string) => syncInstagramNow(id),
     onSuccess: () => {
@@ -179,10 +187,15 @@ export function InstagramCard() {
             </SelectContent>
           </Select>
           <Button onClick={() => connect.mutate(target === 'propia' ? null : target)} disabled={connect.isPending}>
-            {connect.isPending ? <LoaderCircle className="animate-spin" /> : <Plus />} Conectar Instagram
+            {connect.isPending ? <LoaderCircle className="animate-spin" /> : <Plus />} Conectar
           </Button>
+          {target !== 'propia' && (
+            <Button variant="outline" onClick={() => copyLink.mutate(target)} disabled={copyLink.isPending}>
+              {copyLink.isPending ? <LoaderCircle className="animate-spin" /> : <Link2 />} Link para el cliente
+            </Button>
+          )}
           <p className="w-full text-xs text-muted-foreground">
-            Se abre Instagram: iniciá sesión con la cuenta que querés conectar y aceptá los permisos. Los tokens se guardan cifrados en el servidor y se renuevan solos.
+            Se abre Meta: iniciá sesión, elegí el portfolio y marcá la cuenta de Instagram. Si la cuenta es del cliente y vos no tenés acceso, usá “Link para el cliente” y mandáselo (sirve 7 días). El acceso se guarda cifrado en el servidor.
           </p>
         </div>
       )}

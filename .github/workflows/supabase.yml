@@ -65,15 +65,16 @@ jobs:
             echo "::warning::Todavía no están GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET y APP_URL: Google Calendar no va a funcionar hasta cargarlos."
           fi
 
-      - name: Cargar las claves de Instagram en las funciones
+      - name: Cargar las claves de Meta (Instagram) en las funciones
         env:
-          INSTAGRAM_APP_ID: ${{ secrets.INSTAGRAM_APP_ID }}
-          INSTAGRAM_APP_SECRET: ${{ secrets.INSTAGRAM_APP_SECRET }}
+          META_APP_ID: ${{ secrets.META_APP_ID }}
+          META_APP_SECRET: ${{ secrets.META_APP_SECRET }}
+          META_CONFIG_ID: ${{ secrets.META_CONFIG_ID }}
         run: |
-          if [ -n "$INSTAGRAM_APP_ID" ] && [ -n "$INSTAGRAM_APP_SECRET" ]; then
-            npx supabase secrets set INSTAGRAM_APP_ID="$INSTAGRAM_APP_ID" INSTAGRAM_APP_SECRET="$INSTAGRAM_APP_SECRET" --yes
+          if [ -n "$META_APP_ID" ] && [ -n "$META_APP_SECRET" ] && [ -n "$META_CONFIG_ID" ]; then
+            npx supabase secrets set META_APP_ID="$META_APP_ID" META_APP_SECRET="$META_APP_SECRET" META_CONFIG_ID="$META_CONFIG_ID" --yes
           else
-            echo "::warning::Todavía no están INSTAGRAM_APP_ID e INSTAGRAM_APP_SECRET: Instagram no va a funcionar hasta cargarlos."
+            echo "::warning::Todavía no están META_APP_ID, META_APP_SECRET y META_CONFIG_ID: Instagram no va a funcionar hasta cargarlos."
           fi
 
       - name: Publicar las funciones de servidor

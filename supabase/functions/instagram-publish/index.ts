@@ -59,7 +59,7 @@ async function handle(admin: ReturnType<typeof adminClient>, post: PostRow, dead
     const withUrls = ((media ?? []) as MediaRow[]).map((m) => ({ ...m, url: urls.get(m.storage_path) ?? '' }))
     if (withUrls.some((m) => !m.url)) throw new IgError('No se encontró alguno de los archivos de la publicación.')
 
-    const step = await publishStep(post, withUrls, token, deadline)
+    const step = await publishStep(acc.external_id, post, withUrls, token, deadline)
     if (!step.done) {
       // Instagram sigue procesando el video: se retoma en el próximo minuto
       await admin.from('content_posts').update({ ig_container: step.container, publishing_started_at: null }).eq('id', post.id)

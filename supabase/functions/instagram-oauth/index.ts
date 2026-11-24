@@ -1,19 +1,20 @@
-// Conexión de cuentas de Instagram (Business Login for Instagram).
-// POST { action: 'start', clientId? }        → link para autorizar en Instagram (solo admin)
-// GET  ?code=…&state=…                       → Instagram vuelve acá; guarda el token en Vault y redirige al CRM
+// Conexión de cuentas de Instagram (inicio de sesión unificado de Meta).
+// POST { action: 'start', clientId? }        → link de autorización (solo admin). Sirve 7 días: se puede mandar al cliente.
+// GET  ?code=…&state=…                       → Meta vuelve acá; guarda el token en Vault y muestra el resultado
 // POST { action: 'disconnect', accountId }   → borra el token (solo admin); se conserva el historial
 // POST { action: 'sync', accountId? }        → actualiza métricas ahora (equipo o admin)
-import { adminClient, corsHeaders, env, getCaller, json, sign, verify, serve } from '../_shared/http.ts'
-import { IG_SCOPES, IgError, exchangeCode, ig, markDisconnected, syncAccount, type Account } from '../_shared/instagram.ts'
+import { adminClient, corsHeaders, env, getCaller, json, serve, sign, verify } from '../_shared/http.ts'
+import { GRAPH_VERSION, IgError, assignedAccounts, exchangeCode, markDisconnected, syncAccount, type Account } from '../_shared/instagram.ts'
 
 const redirectUri = () => `${env('SUPABASE_URL')}/functions/v1/instagram-oauth`
 const appUrl = () => env('APP_URL').replace(/\/+$/, '')
+const LINK_DAYS = 7
 
-function backToApp(result: 'ok' | 'error', reason?: string, clientId?: string) {
-  const url = new URL(clientId ? `${appUrl()}/clientes/${clientId}` : `${appUrl()}/configuracion`)
-  url.searchParams.set('tab', clientId ? 'metricas' : 'integraciones')
-  url.searchParams.set('instagram', result)
-  if (reason) url.searchParams.set('motivo', reason)
+/** Página pública del CRM que muestra si salió bien (la puede abrir el cliente sin cuenta). */
+function result(ok: boolean, detail: string) {
+  const url = new URL(`${appUrl()}/instagram-conectado`)
+  url.searchParams.set('resultado', ok ? 'ok' : 'error')
+  url.searchParams.set(ok ? 'cuentas' : 'motivo', detail)
   return Response.redirect(url.toString(), 302)
 }
 
@@ -26,52 +27,46 @@ serve(async (req) => {
   // ------------------------------------------------ Instagram vuelve después de autorizar
   if (req.method === 'GET') {
     const url = new URL(req.url)
-    const state = url.searchParams.get('state') ?? ''
-    const payload = await verify(state, env('INSTAGRAM_APP_SECRET'))
+    const payload = await verify(url.searchParams.get('state') ?? '', env('META_APP_SECRET'))
     const [userId, clientId, exp] = payload?.split('|') ?? []
-    const client = clientId || undefined
-    if (url.searchParams.get('error')) return backToApp('error', 'Cancelaste la autorización en Instagram.', client)
+    if (url.searchParams.get('error')) return result(false, 'Se canceló la autorización.')
     const code = url.searchParams.get('code')
-    if (!code || !userId || Number(exp) < Date.now()) return backToApp('error', 'El link venció o vino incompleto. Probá conectar de nuevo.', client)
+    if (!code || !userId || Number(exp) < Date.now()) return result(false, 'El link venció o vino incompleto. Pedí uno nuevo.')
 
     try {
-      const { token, expiresAt, permissions } = await exchangeCode(code, redirectUri())
-      const me = await ig<{ user_id: string; username: string; name?: string; account_type?: string; profile_picture_url?: string; followers_count?: number }>('me', token, {
-        fields: 'user_id,username,name,account_type,profile_picture_url,followers_count',
-      })
-      if (!permissions.includes('instagram_business_content_publish')) {
-        // Se conecta igual (sirve para métricas), pero avisamos
-        console.warn('Sin permiso de publicación para', me.username)
+      const { token, expiresAt } = await exchangeCode(code, redirectUri())
+      const accounts = await assignedAccounts(token)
+      if (!accounts.length) return result(false, 'No se compartió ninguna cuenta de Instagram. Volvé a intentar y marcá la cuenta cuando Meta lo pida.')
+      const saved: string[] = []
+      for (const ig of accounts) {
+        const { data: accountId, error } = await admin.rpc('save_instagram_account', {
+          // Si se compartieron varias, el cliente se asigna después desde Integraciones
+          p_client_id: accounts.length === 1 && clientId ? clientId : null,
+          p_external_id: String(ig.id),
+          p_username: ig.username,
+          p_name: ig.name ?? null,
+          p_account_type: 'BUSINESS',
+          p_token: token,
+          p_expires_at: expiresAt,
+          p_scopes: [],
+          p_picture: ig.profile_picture_url ?? null,
+          p_followers: ig.followers_count ?? null,
+          p_user: userId,
+        })
+        if (error) throw new Error(error.message)
+        saved.push(`@${ig.username}`)
+        // Primera carga: últimos 30 días (si falla, la hace el cron de mañana)
+        const { data: acc } = await admin.from('social_accounts').select(ACCOUNT_FIELDS).eq('id', accountId).single()
+        try {
+          await syncAccount(admin, acc as Account, 30)
+        } catch (e) {
+          console.error('Primera sincronización', e)
+        }
       }
-      const { data: accountId, error } = await admin.rpc('save_instagram_account', {
-        p_client_id: client ?? null,
-        p_external_id: String(me.user_id),
-        p_username: me.username,
-        p_name: me.name ?? null,
-        p_account_type: me.account_type ?? 'BUSINESS',
-        p_token: token,
-        p_expires_at: expiresAt,
-        p_scopes: permissions,
-        p_picture: me.profile_picture_url ?? null,
-        p_followers: me.followers_count ?? null,
-        p_user: userId,
-      })
-      if (error) throw new Error(error.message)
-
-      // Crons de publicación y métricas (necesitan la URL del proyecto)
       await admin.rpc('setup_instagram_crons', { p_project_url: env('SUPABASE_URL') })
-
-      // Primera carga: últimos 30 días (si falla, la hace el cron de mañana)
-      const { data: acc } = await admin.from('social_accounts').select(ACCOUNT_FIELDS).eq('id', accountId).single()
-      try {
-        await syncAccount(admin, acc as Account, 30)
-      } catch (e) {
-        console.error('Primera sincronización', e)
-      }
-      return backToApp('ok', undefined, client)
+      return result(true, saved.join(', '))
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Error desconocido'
-      return backToApp('error', `Instagram rechazó la conexión: ${msg}`, client)
+      return result(false, `Meta rechazó la conexión: ${e instanceof Error ? e.message : 'error desconocido'}`)
     }
   }
 
@@ -104,16 +99,16 @@ serve(async (req) => {
   if (caller.role !== 'admin') return json({ error: 'Solo un admin puede conectar o desconectar cuentas.' }, 403)
 
   if (body.action === 'start') {
-    if (!Deno.env.get('INSTAGRAM_APP_ID') || !Deno.env.get('INSTAGRAM_APP_SECRET'))
-      return json({ error: 'Todavía falta configurar la app de Instagram en Meta y cargar sus claves (los pasos de la Fase 6). Cuando estén, este botón funciona.' }, 503)
+    if (!Deno.env.get('META_APP_ID') || !Deno.env.get('META_APP_SECRET') || !Deno.env.get('META_CONFIG_ID'))
+      return json({ error: 'Todavía falta terminar la configuración de la app en Meta y cargar sus claves (Fase 6). Cuando estén, este botón funciona.' }, 503)
     const clientId = typeof body.clientId === 'string' && /^[0-9a-f-]{36}$/.test(body.clientId) ? body.clientId : ''
-    const state = await sign(`${caller.userId}|${clientId}|${Date.now() + 15 * 60_000}`, env('INSTAGRAM_APP_SECRET'))
-    const url = new URL('https://www.instagram.com/oauth/authorize')
-    url.searchParams.set('client_id', env('INSTAGRAM_APP_ID'))
+    const state = await sign(`${caller.userId}|${clientId}|${Date.now() + LINK_DAYS * 864e5}`, env('META_APP_SECRET'))
+    const url = new URL(`https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth`)
+    url.searchParams.set('client_id', env('META_APP_ID'))
     url.searchParams.set('redirect_uri', redirectUri())
+    url.searchParams.set('config_id', env('META_CONFIG_ID'))
     url.searchParams.set('response_type', 'code')
-    url.searchParams.set('scope', IG_SCOPES.join(','))
-    url.searchParams.set('force_reauth', 'true')
+    url.searchParams.set('override_default_response_type', 'true')
     url.searchParams.set('state', state)
     return json({ url: url.toString() })
   }

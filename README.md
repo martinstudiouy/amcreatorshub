@@ -87,10 +87,12 @@ src/
 
 ## Instagram
 
-- Usa la **Instagram API con Instagram Login** (`graph.instagram.com`, v25.0): las cuentas tienen que ser profesionales (Empresa o Creador); no hace falta página de Facebook.
-- Permisos: `instagram_business_basic`, `instagram_business_content_publish`, `instagram_business_manage_insights`.
-- Secretos en GitHub: `INSTAGRAM_APP_ID` e `INSTAGRAM_APP_SECRET` (el workflow los copia a Supabase). URL de redirección en Meta: `https://<proyecto>.supabase.co/functions/v1/instagram-oauth`.
-- El token largo (60 días) se guarda en Vault y se renueva solo cuando faltan menos de 15 días. Si no se puede, la cuenta pasa a “Por vencer” o “Desconectada” y aparece un aviso.
+- Usa el **inicio de sesión unificado** de Meta (Facebook Login for Business con una configuración). Meta dejó de ofrecer “Instagram Login” a las apps nuevas en octubre de 2026. No hace falta página de Facebook; sí un portfolio comercial.
+- La persona que autoriza elige el portfolio y marca las cuentas de Instagram. El token es de usuario del sistema y no vence; se guarda en Vault.
+- Llamadas a `graph.facebook.com/v25.0/{id de la cuenta de Instagram}`.
+- Secretos en GitHub: `META_APP_ID`, `META_APP_SECRET` (Configuración de la app → Básica) y `META_CONFIG_ID` (id de la configuración del login). URL de redirección en Meta: `https://<proyecto>.supabase.co/functions/v1/instagram-oauth`.
+- Permisos de la configuración: `instagram_basic`, `instagram_content_publish`, `instagram_manage_insights`.
+- “Link para el cliente”: genera el link de autorización (sirve 7 días) para que el cliente conecte su cuenta sin entrar al CRM; vuelve a `/instagram-conectado`.
 - `instagram-publish` corre cada minuto: arma los contenedores (imagen, video, carrusel, reel o story), espera a que Instagram procese los videos y publica. Reintenta 3 veces los errores pasajeros; si no, marca la publicación con estado Error y el motivo.
 - `instagram-sync` corre todos los días a las 06:10 (Montevideo): seguidores, alcance, visualizaciones, interacciones y clics del día anterior, y métricas de las publicaciones de los últimos 90 días.
 - Las imágenes se convierten a JPG en el navegador al subirlas, porque Instagram solo publica JPG.

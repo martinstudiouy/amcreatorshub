@@ -12,6 +12,7 @@ import { ClientsPage } from '@/features/clients/clients-page'
 import { DashboardPage } from '@/features/dashboard/dashboard-page'
 import { ApprovalPage } from '@/features/content/approval-page'
 import { ContentPage } from '@/features/content/content-page'
+import { InstagramConnectedPage } from '@/features/metrics/instagram-connected-page'
 import { MetricsPage } from '@/features/metrics/metrics-page'
 import { FinancePage } from '@/features/finance/finance-page'
 import { ClientPortal } from '@/features/misc/client-portal'
@@ -36,6 +37,7 @@ export default function App() {
     <Routes>
       <Route path="/privacidad" element={<PrivacyPage />} />
       <Route path="/aprobar/:token" element={<ApprovalPage />} />
+      <Route path="/instagram-conectado" element={<InstagramConnectedPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/olvide-mi-contrasena" element={<ForgotPasswordPage />} />
       <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />

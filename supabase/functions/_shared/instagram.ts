@@ -1,10 +1,13 @@
-// Instagram API con Instagram Login (graph.instagram.com).
+// Instagram API con inicio de sesión unificado (Facebook Login for Business + configuración).
+// Meta dejó de ofrecer "Instagram Login" a las apps nuevas en octubre de 2026.
+// · Login: facebook.com/dialog/oauth con config_id → token de usuario del sistema que no vence.
+// · API: graph.facebook.com, siempre con el ID de la cuenta profesional de Instagram.
 // Todo lo que habla con Instagram vive acá: tokens, métricas y publicación.
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2'
 import { env } from './http.ts'
 
-export const IG_GRAPH = 'https://graph.instagram.com/v25.0'
-export const IG_SCOPES = ['instagram_business_basic', 'instagram_business_content_publish', 'instagram_business_manage_insights']
+export const GRAPH_VERSION = 'v25.0'
+export const IG_GRAPH = `https://graph.facebook.com/${GRAPH_VERSION}`
 
 export class IgError extends Error {
   constructor(
@@ -30,8 +33,10 @@ export async function ig<T = Record<string, unknown>>(path: string, token: strin
   const url = new URL(path.startsWith('http') ? path : `${IG_GRAPH}/${path.replace(/^\//, '')}`)
   const body = new URLSearchParams()
   for (const [k, v] of Object.entries(params)) if (v !== undefined) (method === 'GET' ? url.searchParams : body).set(k, String(v))
-  if (method === 'GET') url.searchParams.set('access_token', token)
-  else body.set('access_token', token)
+  if (token) {
+    if (method === 'GET') url.searchParams.set('access_token', token)
+    else body.set('access_token', token)
+  }
   const res = await fetch(url, method === 'POST' ? { method, body } : undefined)
   const data = await res.json().catch(() => ({}))
   if (!res.ok || data.error) {
@@ -59,40 +64,41 @@ export async function getToken(admin: SupabaseClient, accountId: string): Promis
   return data as string
 }
 
-/** Cambia el código de autorización por un token largo (60 días). */
+/** Cambia el código de autorización por el token de usuario del sistema (no vence). */
 export async function exchangeCode(code: string, redirectUri: string) {
-  const form = new FormData()
-  form.set('client_id', env('INSTAGRAM_APP_ID'))
-  form.set('client_secret', env('INSTAGRAM_APP_SECRET'))
-  form.set('grant_type', 'authorization_code')
-  form.set('redirect_uri', redirectUri)
-  form.set('code', code.replace(/#_$/, ''))
-  const res = await fetch('https://api.instagram.com/oauth/access_token', { method: 'POST', body: form })
-  const short = await res.json().catch(() => ({}))
-  if (!res.ok || !short.access_token) throw new IgError(short.error_message || short.error?.message || 'Instagram rechazó la conexión.', short.code, undefined, res.status)
-  const long = await ig<{ access_token: string; expires_in: number }>('https://graph.instagram.com/access_token', short.access_token, {
-    grant_type: 'ig_exchange_token',
-    client_secret: env('INSTAGRAM_APP_SECRET'),
+  const r = await ig<{ access_token: string; expires_in?: number }>('oauth/access_token', '', {
+    client_id: env('META_APP_ID'),
+    client_secret: env('META_APP_SECRET'),
+    redirect_uri: redirectUri,
+    code,
   })
-  const permissions: string[] = Array.isArray(short.permissions) ? short.permissions : String(short.permissions ?? '').split(',').filter(Boolean)
-  return { token: long.access_token, expiresAt: new Date(Date.now() + long.expires_in * 1000).toISOString(), permissions }
+  return { token: r.access_token, expiresAt: r.expires_in ? new Date(Date.now() + r.expires_in * 1000).toISOString() : null }
 }
 
-/** Renueva el token si vence en menos de 15 días (Instagram pide que tenga al menos 24 h). */
+export interface IgProfile {
+  id: string
+  username: string
+  name?: string
+  profile_picture_url?: string
+  followers_count?: number
+  follows_count?: number
+}
+const PROFILE_FIELDS = 'id,username,name,profile_picture_url,followers_count,follows_count,media_count'
+
+/** Cuentas de Instagram que la persona compartió con la app al autorizar. */
+export async function assignedAccounts(token: string): Promise<IgProfile[]> {
+  const r = await ig<{ data: { id: string }[] }>('me/assigned_instagram_accounts', token, { fields: 'id', limit: 100 })
+  const out: IgProfile[] = []
+  for (const a of r.data ?? []) out.push(await ig<IgProfile>(a.id, token, { fields: PROFILE_FIELDS }))
+  return out
+}
+
+/** Los tokens del login unificado no vencen; si alguno trae vencimiento, avisamos antes. */
 export async function refreshIfNeeded(admin: SupabaseClient, acc: Account, token: string): Promise<string> {
-  const expires = acc.token_expires_at ? new Date(acc.token_expires_at).getTime() : 0
-  const refreshedAt = acc.token_refreshed_at ? new Date(acc.token_refreshed_at).getTime() : 0
-  if (expires - Date.now() > 15 * 864e5 || Date.now() - refreshedAt < 864e5) return token
-  try {
-    const r = await ig<{ access_token: string; expires_in: number }>('https://graph.instagram.com/refresh_access_token', token, { grant_type: 'ig_refresh_token' })
-    await admin.rpc('update_social_token', { p_account_id: acc.id, p_token: r.access_token, p_expires_at: new Date(Date.now() + r.expires_in * 1000).toISOString() })
-    return r.access_token
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e)
-    const soon = expires - Date.now() < 7 * 864e5
-    await admin.from('social_accounts').update({ status: soon ? 'por_vencer' : 'conectada', last_error: `No se pudo renovar el acceso: ${msg}` }).eq('id', acc.id)
-    return token
-  }
+  if (!acc.token_expires_at) return token
+  const left = new Date(acc.token_expires_at).getTime() - Date.now()
+  if (left < 7 * 864e5 && acc.status === 'conectada') await admin.from('social_accounts').update({ status: 'por_vencer' }).eq('id', acc.id)
+  return token
 }
 
 /** Marca la cuenta como desconectada y avisa al equipo. */
@@ -152,9 +158,8 @@ export async function syncAccount(admin: SupabaseClient, acc: Account, days = 2)
   const today = mvdDate()
 
   // Perfil y seguidores de hoy
-  const me = await ig<{ user_id?: string; username?: string; name?: string; profile_picture_url?: string; followers_count?: number; follows_count?: number }>('me', token, {
-    fields: 'user_id,username,name,profile_picture_url,followers_count,follows_count,media_count',
-  })
+  const ID = acc.external_id
+  const me = await ig<IgProfile>(ID, token, { fields: PROFILE_FIELDS })
   await admin
     .from('social_accounts')
     .update({ username: me.username, display_name: me.name ?? null, profile_picture_url: me.profile_picture_url ?? null, followers_count: me.followers_count ?? null, last_synced_at: new Date().toISOString(), last_error: null, ...(acc.status === 'desconectada' ? {} : { status: acc.status === 'por_vencer' ? 'por_vencer' : 'conectada' }) })
@@ -164,7 +169,7 @@ export async function syncAccount(admin: SupabaseClient, acc: Account, days = 2)
   // Métricas de cada día cerrado (ayer hacia atrás)
   for (let i = 1; i <= days; i++) {
     const day = addDaysKey(today, -i)
-    const m = await insights('me/insights', token, ACCOUNT_METRICS, { period: 'day', metric_type: 'total_value', since: mvdDayStart(day), until: mvdDayStart(addDaysKey(day, 1)) })
+    const m = await insights(`${ID}/insights`, token, ACCOUNT_METRICS, { period: 'day', metric_type: 'total_value', since: mvdDayStart(day), until: mvdDayStart(addDaysKey(day, 1)) })
     const reach = m.reach ?? null
     const interactions = m.total_interactions ?? null
     await admin.from('ig_metrics_daily').upsert(
@@ -183,7 +188,7 @@ export async function syncAccount(admin: SupabaseClient, acc: Account, days = 2)
   }
 
   // Publicaciones de los últimos 90 días
-  const media = await ig<{ data: Media[] }>('me/media', token, { fields: 'id,caption,media_type,media_product_type,permalink,timestamp,like_count,comments_count,thumbnail_url,media_url', limit: 50 })
+  const media = await ig<{ data: Media[] }>(`${ID}/media`, token, { fields: 'id,caption,media_type,media_product_type,permalink,timestamp,like_count,comments_count,thumbnail_url,media_url', limit: 50 })
   const since = Date.now() - 90 * 864e5
   const recent = media.data.filter((m) => new Date(m.timestamp).getTime() >= since && m.media_product_type !== 'STORY')
   const ids = recent.map((m) => m.id)
@@ -284,7 +289,7 @@ async function waitFinished(ids: string[], token: string, deadline: number) {
  * Avanza la publicación todo lo que se pueda hasta `deadline`.
  * Si los videos siguen procesándose, devuelve el estado para seguir en el próximo minuto.
  */
-export async function publishStep(post: PostRow, media: (MediaRow & { url: string })[], token: string, deadline: number): Promise<Step> {
+export async function publishStep(igId: string, post: PostRow, media: (MediaRow & { url: string })[], token: string, deadline: number): Promise<Step> {
   const plan = containerPlan(post.format, media)
   const caption = post.format === 'story' ? undefined : fullCaption(post)
   const c = { ...(post.ig_container ?? {}) }
@@ -293,13 +298,13 @@ export async function publishStep(post: PostRow, media: (MediaRow & { url: strin
     if (plan.kind === 'carousel') {
       c.children = []
       for (const m of media) {
-        const r = await ig<{ id: string }>('me/media', token, m.media_type === 'video' ? { media_type: 'VIDEO', video_url: m.url, is_carousel_item: true } : { image_url: m.url, is_carousel_item: true }, 'POST')
+        const r = await ig<{ id: string }>(`${igId}/media`, token, m.media_type === 'video' ? { media_type: 'VIDEO', video_url: m.url, is_carousel_item: true } : { image_url: m.url, is_carousel_item: true }, 'POST')
         c.children.push(r.id)
       }
     } else {
       const m = media[0]
       const r = await ig<{ id: string }>(
-        'me/media',
+        `${igId}/media`,
         token,
         { media_type: plan.params.media_type, [plan.params.video ? 'video_url' : 'image_url']: m.url, caption, ...(plan.params.media_type === 'REELS' ? { share_to_feed: true } : {}) },
         'POST',
@@ -312,11 +317,11 @@ export async function publishStep(post: PostRow, media: (MediaRow & { url: strin
 
   if (plan.kind === 'carousel' && !c.parent) {
     if (!(await waitFinished(c.children, token, deadline))) return { done: false, container: c }
-    const r = await ig<{ id: string }>('me/media', token, { media_type: 'CAROUSEL', children: c.children.join(','), caption }, 'POST')
+    const r = await ig<{ id: string }>(`${igId}/media`, token, { media_type: 'CAROUSEL', children: c.children.join(','), caption }, 'POST')
     c.parent = r.id
   }
 
   if (!(await waitFinished([c.parent!], token, deadline))) return { done: false, container: c }
-  const published = await ig<{ id: string }>('me/media_publish', token, { creation_id: c.parent! }, 'POST')
+  const published = await ig<{ id: string }>(`${igId}/media_publish`, token, { creation_id: c.parent! }, 'POST')
   return { done: true, mediaId: published.id }
 }
