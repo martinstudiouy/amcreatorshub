@@ -233,7 +233,7 @@ type Media = { id: string; caption?: string; media_type: string; media_product_t
 // ================================================================ Publicación
 export interface PostRow {
   id: string
-  client_id: string
+  client_id: string | null
   social_account_id: string | null
   format: 'feed' | 'carrusel' | 'reel' | 'story'
   caption: string | null

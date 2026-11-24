@@ -27,6 +27,8 @@ import {
   type Post,
   type PostFormat,
   type PostStatus,
+  STUDIO,
+  STUDIO_LABEL,
 } from '@/data/content'
 import { listClients } from '@/data/crm'
 import { listAccounts, publishNow } from '@/data/instagram'
@@ -97,7 +99,7 @@ function PostForm({ post, draft, onClose, onRequestApproval }: { post?: Post; dr
   const urls = useMediaUrls(post ? [post] : [])
   const fileInput = useRef<HTMLInputElement>(null)
 
-  const [clientId, setClientId] = useState(post?.client_id ?? draft?.clientId ?? '')
+  const [clientId, setClientId] = useState(post ? (post.client_id ?? STUDIO) : (draft?.clientId ?? ''))
   const [format, setFormat] = useState<PostFormat>(post?.format ?? draft?.format ?? 'feed')
   const [date, setDate] = useState(post?.scheduled_at ? localDate(post.scheduled_at) : (draft?.date ?? ''))
   const [time, setTime] = useState(post?.scheduled_at ? localTime(post.scheduled_at) : (draft?.time ?? '12:00'))
@@ -173,7 +175,7 @@ function PostForm({ post, draft, onClose, onRequestApproval }: { post?: Post; dr
     try {
       setSaving('Guardando…')
       const input = {
-        client_id: clientId,
+        client_id: clientId === STUDIO ? null : clientId,
         format,
         scheduled_at: date ? toIso(date, time) : null,
         caption: caption.trim() || null,
@@ -197,7 +199,7 @@ function PostForm({ post, draft, onClose, onRequestApproval }: { post?: Post; dr
         else {
           n++
           setSaving(total > 1 ? `Subiendo archivo ${n} de ${total}…` : 'Subiendo archivo…')
-          ids.push((await addMedia({ id, client_id: clientId }, it.file, pos)).id)
+          ids.push((await addMedia({ id, client_id: clientId === STUDIO ? null : clientId }, it.file, pos)).id)
         }
       }
       const before = (post?.media ?? []).map((m) => m.id).join()
@@ -253,7 +255,10 @@ function PostForm({ post, draft, onClose, onRequestApproval }: { post?: Post; dr
             <Label htmlFor="post-client">Cliente *</Label>
             <Select value={clientId} onValueChange={setClientId} disabled={locked || (!!post && items.some((i) => i.kind === 'existing'))}>
               <SelectTrigger id="post-client"><SelectValue placeholder="Elegí un cliente" /></SelectTrigger>
-              <SelectContent>{clients?.filter((c) => c.status !== 'finalizado' || c.id === clientId).map((c) => <SelectItem key={c.id} value={c.id}>{c.brand_name}</SelectItem>)}</SelectContent>
+              <SelectContent>
+                <SelectItem value={STUDIO}>{STUDIO_LABEL}</SelectItem>
+                {clients?.filter((c) => c.status !== 'finalizado' || c.id === clientId).map((c) => <SelectItem key={c.id} value={c.id}>{c.brand_name}</SelectItem>)}
+              </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
@@ -413,8 +418,8 @@ function PostForm({ post, draft, onClose, onRequestApproval }: { post?: Post; dr
             >
               <Copy />
             </Button>
-            {onRequestApproval && !locked && (
-              <Button variant="outline" onClick={() => onRequestApproval(post.client_id, [post.id])} disabled={!!saving}>
+            {onRequestApproval && !locked && post.client_id && (
+              <Button variant="outline" onClick={() => onRequestApproval(post.client_id!, [post.id])} disabled={!!saving}>
                 <Send /> <span className="hidden sm:inline">Pedir aprobación</span>
               </Button>
             )}
@@ -462,7 +467,7 @@ function InstagramBox({ post, clientId, dirty, onDone }: { post?: Post; clientId
   const [confirm, setConfirm] = useState(false)
   const [busy, setBusy] = useState(false)
   if (!clientId || !accounts) return null
-  const acc = accounts.find((a) => (post?.social_account_id ? a.id === post.social_account_id : a.client_id === clientId))
+  const acc = accounts.find((a) => (post?.social_account_id ? a.id === post.social_account_id : a.client_id === (clientId === STUDIO ? null : clientId)))
 
   if (post?.status === 'publicado')
     return (
@@ -496,7 +501,11 @@ function InstagramBox({ post, clientId, dirty, onDone }: { post?: Post; clientId
         <ChannelIcon channel="instagram" className="text-muted-foreground" />
         <span className="flex-1">
           {!acc ? (
-            <>Este cliente no tiene Instagram conectado: se puede planificar, pero no se publica sola. Conectalo en su ficha → Métricas.</>
+            clientId === STUDIO ? (
+              <>La cuenta de Instagram del estudio no está conectada: se puede planificar, pero no se publica sola. Conectala en Configuración → Integraciones.</>
+            ) : (
+              <>Este cliente no tiene Instagram conectado: se puede planificar, pero no se publica sola. Conectalo en su ficha → Métricas.</>
+            )
           ) : acc.status === 'desconectada' ? (
             <span className="text-destructive">@{acc.username} está desconectada. Reconectala en Configuración → Integraciones para publicar.</span>
           ) : (

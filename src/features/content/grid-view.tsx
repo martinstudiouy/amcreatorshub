@@ -15,7 +15,7 @@ import { localDate } from '@/features/agenda/dates'
 import { PostStatusBadge, PostThumb, useMediaUrls } from './post-ui'
 
 /** Vista previa del perfil de Instagram del cliente: cómo queda el feed con lo planificado. */
-export function GridView({ client, onOpen }: { client: ClientOverview | undefined; onOpen: (p: Post) => void }) {
+export function GridView({ client, onOpen }: { client: Pick<ClientOverview, 'id' | 'brand_name' | 'color_tag' | 'instagram_handle'> | undefined; onOpen: (p: Post) => void }) {
   const [onlyApproved, setOnlyApproved] = useState(false)
   const { data, isLoading, error, refetch } = useQuery({ queryKey: ['grid-posts', client?.id], queryFn: () => listGridPosts(client!.id), enabled: !!client })
   const posts = (data ?? []).filter((p) => !onlyApproved || ['aprobado', 'programado', 'publicado'].includes(p.status))

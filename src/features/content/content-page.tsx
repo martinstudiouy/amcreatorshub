@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { friendlyError } from '@/data/api'
-import { listPosts, updatePost, type Post, type PostFormat, type PostStatus } from '@/data/content'
+import { STUDIO, STUDIO_LABEL, listPosts, updatePost, type Post, type PostFormat, type PostStatus } from '@/data/content'
 import { listClients } from '@/data/crm'
 import { useParam } from '@/features/projects/use-task-sheet'
 import { ViewSwitch } from '@/features/projects/view-switch'
@@ -52,7 +52,7 @@ export function ContentPage() {
   const { data, isLoading, error, refetch } = useQuery({ queryKey, queryFn: () => listPosts(range), enabled: view !== 'grilla' })
   const { data: clients } = useQuery({ queryKey: ['clients'], queryFn: listClients })
   const posts = useMemo(
-    () => (data ?? []).filter((p) => (clientId === 'todos' || p.client_id === clientId) && (format === 'todos' || p.format === format) && (status === 'todos' || p.status === status)),
+    () => (data ?? []).filter((p) => (clientId === 'todos' || p.client_id === (clientId === STUDIO ? null : clientId)) && (format === 'todos' || p.format === format) && (status === 'todos' || p.status === status)),
     [data, clientId, format, status],
   )
   const urls = useMediaUrls(view === 'semana' ? posts : [])
@@ -81,7 +81,7 @@ export function ContentPage() {
   }
   const label = view === 'mes' ? monthLabel(date) : view === 'semana' ? weekLabel(date) : `Desde el ${Number(date.slice(8))}/${date.slice(5, 7)}`
   const ideas = posts.filter((p) => !p.scheduled_at)
-  const selectedClient = clients?.find((c) => c.id === clientId)
+  const selectedClient = clientId === STUDIO ? { id: STUDIO, brand_name: 'AM Creators', color_tag: '#0300FF', instagram_handle: 'amcreatorsuy' } : clients?.find((c) => c.id === clientId)
 
   return (
     <>
@@ -90,7 +90,7 @@ export function ContentPage() {
         description="El calendario de publicaciones de todos los clientes."
         actions={
           <>
-            <Button variant="outline" onClick={() => setApproval({ clientId: clientId !== 'todos' ? clientId : undefined })}>
+            <Button variant="outline" onClick={() => setApproval({ clientId: clientId !== 'todos' && clientId !== STUDIO ? clientId : undefined })}>
               <Send /> <span className="hidden sm:inline">Pedir aprobación</span>
             </Button>
             <Button onClick={() => create({ date: view === 'mes' || view === 'grilla' ? todayMvd() : date })}>
@@ -116,6 +116,9 @@ export function ContentPage() {
             <SelectTrigger className="w-full sm:w-48" aria-label="Filtrar por cliente"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">{view === 'grilla' ? 'Elegí un cliente' : 'Todos los clientes'}</SelectItem>
+              <SelectItem value={STUDIO}>
+                <span className="inline-flex items-center gap-2"><span className="size-2 rounded-full bg-[#0300FF]" /> {STUDIO_LABEL}</span>
+              </SelectItem>
               {clients?.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   <span className="inline-flex items-center gap-2"><span className="size-2 rounded-full" style={{ background: c.color_tag ?? '#64748B' }} /> {c.brand_name}</span>

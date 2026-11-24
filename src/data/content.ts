@@ -31,20 +31,24 @@ type Row = Tables<'content_posts'> & {
   client: { brand_name: string; color_tag: string | null; instagram_handle: string | null } | null
   media: Media[]
 }
+/** Valor que se usa en filtros y formularios para el contenido del propio estudio (sin cliente). */
+export const STUDIO = 'estudio'
+export const STUDIO_LABEL = 'AM Creators (estudio)'
+
 const fromRow = ({ client, ...p }: Row): Post => ({
   ...p,
-  client_name: client?.brand_name ?? '—',
-  client_color: client?.color_tag ?? null,
+  client_name: p.client_id ? (client?.brand_name ?? '—') : 'AM Creators',
+  client_color: p.client_id ? (client?.color_tag ?? null) : '#0300FF',
   instagram_handle: client?.instagram_handle ?? null,
   media: [...(p.media ?? [])].sort((a, b) => a.position - b.position),
 })
 
 function demoPost(p: Tables<'content_posts'>): Post {
-  const c = db.clients.get(p.client_id)
+  const c = p.client_id ? db.clients.get(p.client_id) : null
   return {
     ...p,
-    client_name: c?.brand_name ?? '—',
-    client_color: c?.color_tag ?? null,
+    client_name: p.client_id ? (c?.brand_name ?? '—') : 'AM Creators',
+    client_color: p.client_id ? (c?.color_tag ?? null) : '#0300FF',
     instagram_handle: c?.instagram_handle ?? null,
     media: content.media.rows.filter((m) => m.post_id === p.id).sort((a, b) => a.position - b.position),
   }
@@ -54,11 +58,12 @@ const byDate = (a: Post, b: Post) => (a.scheduled_at ?? '9999').localeCompare(b.
 
 // ================================================================ Lectura
 /** Publicaciones con fecha en [from, to) y, además, las ideas sin fecha. */
+/** `clientId`: un cliente, STUDIO para el contenido del estudio, o nada para todos. */
 export async function listPosts(range: { from: string; to: string; clientId?: string }): Promise<Post[]> {
   if (isDemo) {
     await wait()
     return content.posts.rows
-      .filter((p) => !p.deleted_at && (!range.clientId || p.client_id === range.clientId))
+      .filter((p) => !p.deleted_at && (!range.clientId || p.client_id === (range.clientId === STUDIO ? null : range.clientId)))
       .filter((p) => !p.scheduled_at || (p.scheduled_at >= range.from && p.scheduled_at < range.to))
       .map(demoPost)
       .sort(byDate)
@@ -68,17 +73,18 @@ export async function listPosts(range: { from: string; to: string; clientId?: st
     .select(SELECT)
     .is('deleted_at', null)
     .or(`scheduled_at.is.null,and(scheduled_at.gte.${range.from},scheduled_at.lt.${range.to})`)
-  if (range.clientId) q = q.eq('client_id', range.clientId)
+  if (range.clientId) q = range.clientId === STUDIO ? q.is('client_id', null) : q.eq('client_id', range.clientId)
   const rows = check(await q.order('scheduled_at', { ascending: true, nullsFirst: false }).limit(1000)) as unknown as Row[]
   return rows.map(fromRow)
 }
 
 /** Las últimas publicaciones de feed de un cliente, para la vista de grilla (más nueva primero). */
 export async function listGridPosts(clientId: string): Promise<Post[]> {
+  const cid = clientId === STUDIO ? null : clientId
   if (isDemo) {
     await wait()
     return content.posts.rows
-      .filter((p) => !p.deleted_at && p.client_id === clientId && p.format !== 'story' && p.scheduled_at)
+      .filter((p) => !p.deleted_at && p.client_id === cid && p.format !== 'story' && p.scheduled_at)
       .map(demoPost)
       .sort((a, b) => b.scheduled_at!.localeCompare(a.scheduled_at!))
       .slice(0, 30)
@@ -88,7 +94,7 @@ export async function listGridPosts(clientId: string): Promise<Post[]> {
       .from('content_posts')
       .select(SELECT)
       .is('deleted_at', null)
-      .eq('client_id', clientId)
+      .filter('client_id', cid ? 'eq' : 'is', cid ?? 'null')
       .neq('format', 'story')
       .not('scheduled_at', 'is', null)
       .order('scheduled_at', { ascending: false })
@@ -109,7 +115,7 @@ export async function getPost(postId: string): Promise<Post | null> {
 
 // ================================================================ Escritura
 export interface PostInput {
-  client_id: string
+  client_id: string | null
   format: PostFormat
   scheduled_at: string | null
   caption: string | null
@@ -208,11 +214,11 @@ export async function toJpeg(file: File): Promise<File> {
   }
 }
 
-export async function addMedia(post: { id: string; client_id: string }, original: File, position: number): Promise<Media> {
+export async function addMedia(post: { id: string; client_id: string | null }, original: File, position: number): Promise<Media> {
   const file = await toJpeg(original)
   const info = await readMediaInfo(file)
   // La primera carpeta es el cliente: así el portal del cliente (Fase 8) puede leer sus archivos.
-  const path = await upload('content', `${post.client_id}/${post.id}`, file)
+  const path = await upload('content', `${post.client_id ?? STUDIO}/${post.id}`, file)
   const row = { post_id: post.id, storage_path: path, media_type: info.type, position, width: info.width, height: info.height, duration_s: info.duration, cover_path: null }
   if (isDemo) return content.media.insert(row)
   const { data, error } = await sb().from('content_media').insert(row).select('*').single()

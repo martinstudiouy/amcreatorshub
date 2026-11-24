@@ -43,10 +43,12 @@ serve(async (req) => {
 async function handle(admin: ReturnType<typeof adminClient>, post: PostRow, deadline: number): Promise<Result> {
   // Cuenta: la elegida en la publicación o la cuenta de Instagram conectada del cliente
   let accQ = admin.from('social_accounts').select('id, client_id, external_id, username, status, token_expires_at, token_refreshed_at, last_synced_at').eq('platform', 'instagram')
-  accQ = post.social_account_id ? accQ.eq('id', post.social_account_id) : accQ.eq('client_id', post.client_id).neq('status', 'desconectada')
+  accQ = post.social_account_id
+    ? accQ.eq('id', post.social_account_id)
+    : (post.client_id ? accQ.eq('client_id', post.client_id) : accQ.is('client_id', null)).neq('status', 'desconectada')
   const { data: accs } = await accQ.order('created_at').limit(1)
   const acc = accs?.[0] as Account | undefined
-  if (!acc) return fail(admin, post, 'El cliente no tiene una cuenta de Instagram conectada. Conectala en la ficha del cliente → Métricas.', true)
+  if (!acc) return fail(admin, post, post.client_id ? 'El cliente no tiene una cuenta de Instagram conectada. Conectala en la ficha del cliente → Métricas.' : 'El estudio no tiene su cuenta de Instagram conectada. Conectala en Configuración → Integraciones.', true)
   if (acc.status === 'desconectada') return fail(admin, post, `La cuenta @${acc.username} está desconectada. Reconectala en Configuración → Integraciones.`, true)
 
   try {

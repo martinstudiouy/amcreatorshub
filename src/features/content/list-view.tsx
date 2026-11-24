@@ -18,7 +18,7 @@ export function ListView({ posts, onOpen, onCreate, onApprove, hideClient }: { p
   const days = [...groupByDay(posts).entries()].sort((a, b) => a[0].localeCompare(b[0]))
   const ideas = posts.filter((p) => !p.scheduled_at)
   const chosen = posts.filter((p) => selected.has(p.id))
-  const sameClient = chosen.length > 0 && chosen.every((p) => p.client_id === chosen[0].client_id)
+  const sameClient = chosen.length > 0 && !!chosen[0].client_id && chosen.every((p) => p.client_id === chosen[0].client_id)
 
   if (!posts.length)
     return (
@@ -59,14 +59,14 @@ export function ListView({ posts, onOpen, onCreate, onApprove, hideClient }: { p
       {chosen.length > 0 && (
         <div className="sticky top-16 z-10 flex flex-wrap items-center gap-3 rounded-lg border bg-card px-4 py-2.5 shadow-soft">
           <span className="text-sm font-medium">{chosen.length} elegida{chosen.length > 1 ? 's' : ''}</span>
-          {!sameClient && <span className="text-xs text-warning">Para pedir aprobación tienen que ser del mismo cliente.</span>}
+          {!sameClient && <span className="text-xs text-warning">{chosen.some((p) => !p.client_id) ? 'El contenido del estudio no necesita aprobación.' : 'Para pedir aprobación tienen que ser del mismo cliente.'}</span>}
           <div className="ml-auto flex gap-2">
             <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Limpiar</Button>
             <Button
               size="sm"
               disabled={!sameClient}
               onClick={() => {
-                onApprove(chosen[0].client_id, chosen.map((p) => p.id))
+                onApprove(chosen[0].client_id!, chosen.map((p) => p.id))
                 setSelected(new Set())
               }}
             >

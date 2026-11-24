@@ -497,7 +497,7 @@ export type Database = {
       content_posts: {
         Row: {
           caption: string | null;
-          client_id: string;
+          client_id: string | null;
           created_at: string;
           created_by: string | null;
           deleted_at: string | null;
@@ -520,7 +520,7 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           caption?: string | null;
-          client_id: string;
+          client_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
@@ -542,7 +542,7 @@ export type Database = {
         };
         Update: {
           caption?: string | null;
-          client_id?: string;
+          client_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           deleted_at?: string | null;
@@ -2799,7 +2799,7 @@ export type Database = {
         Args: { p_post_id?: string };
         Returns: {
           caption: string | null;
-          client_id: string;
+          client_id: string | null;
           created_at: string;
           created_by: string | null;
           deleted_at: string | null;
