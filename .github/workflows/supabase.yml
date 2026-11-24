@@ -6,7 +6,7 @@ name: Publicar en Supabase
 on:
   push:
     branches: [main]
-    paths: ['supabase/**', '.github/workflows/supabase.yml']
+    paths: ["supabase/**", ".github/workflows/supabase.yml"]
   workflow_dispatch:
 
 concurrency: supabase-deploy
@@ -18,7 +18,7 @@ jobs:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
       PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-      SUPABASE_YES: '1'
+      SUPABASE_YES: "1"
     steps:
       - uses: actions/checkout@v4
 
@@ -76,6 +76,19 @@ jobs:
           else
             echo "::warning::Todavía no están META_APP_ID, META_APP_SECRET y META_CONFIG_ID: Instagram no va a funcionar hasta cargarlos."
           fi
+
+      - name: Cargar las claves de WhatsApp y del webhook de Meta
+        env:
+          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
+          WHATSAPP_BUSINESS_ACCOUNT_ID: ${{ secrets.WHATSAPP_BUSINESS_ACCOUNT_ID }}
+          META_WEBHOOK_VERIFY_TOKEN: ${{ secrets.META_WEBHOOK_VERIFY_TOKEN }}
+        run: |
+          args=""
+          for v in WHATSAPP_TOKEN WHATSAPP_PHONE_NUMBER_ID WHATSAPP_BUSINESS_ACCOUNT_ID META_WEBHOOK_VERIFY_TOKEN; do
+            if [ -n "${!v}" ]; then args="$args $v=${!v}"; else echo "::warning::Todavía no está $v: la bandeja de mensajes no va a funcionar del todo hasta cargarlo."; fi
+          done
+          if [ -n "$args" ]; then npx supabase secrets set $args --yes; fi
 
       - name: Publicar las funciones de servidor
         run: npx supabase functions deploy --use-api --yes

@@ -285,7 +285,7 @@ export function EventDialog({
               <Label className="text-muted-foreground">Recordatorio por WhatsApp al cliente</Label>
               <span className="flex h-10 items-center gap-2">
                 <Checkbox id="ev-wa" checked={f.whatsapp_reminder} onCheckedChange={(v) => set('whatsapp_reminder', v === true)} disabled={f.client_id === 'none'} />
-                <Label htmlFor="ev-wa" className="text-sm font-normal text-muted-foreground">Mandarle un aviso <Badge variant="neutral" className="ml-1">Se activa en la Fase 7</Badge></Label>
+                <Label htmlFor="ev-wa" className="text-sm font-normal text-muted-foreground" title="Se manda unas 24 horas antes con la plantilla aprobada recordatorio_reunion">Avisarle 24 h antes</Label>
               </span>
             </div>
           </div>

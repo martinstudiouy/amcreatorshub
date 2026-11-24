@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CalendarClock, CircleAlert, LoaderCircle, MessageCircle, RefreshCw, Unplug } from 'lucide-react'
+import { CalendarClock, CircleAlert, LoaderCircle, RefreshCw, Unplug } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -12,29 +12,14 @@ import { friendlyError } from '@/data/api'
 import { timeAgo } from '@/lib/format'
 import { isDemo } from '@/lib/supabase'
 import { InstagramCard } from '@/features/metrics/instagram-accounts'
-
-const LATER = [
-  { name: 'WhatsApp Business', desc: 'Bandeja unificada, respuestas rápidas y recordatorios a clientes.', phase: 7, icon: <MessageCircle className="size-5" /> },
-]
+import { WhatsAppCard } from '@/features/inbox/messages-settings'
 
 export function IntegrationsTab() {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <GoogleCalendarCard />
       <InstagramCard />
-      {LATER.map((i) => (
-        <Card key={i.name} className="flex flex-col gap-3 p-5">
-          <div className="flex items-center justify-between">
-            <span className="flex size-10 items-center justify-center rounded-full bg-accent text-brand">{i.icon}</span>
-            <Badge variant="neutral">Fase {i.phase}</Badge>
-          </div>
-          <div>
-            <p className="font-semibold">{i.name}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{i.desc}</p>
-          </div>
-          <p className="mt-auto text-xs text-muted-foreground">Las claves se guardan solo en el servidor, nunca en el navegador.</p>
-        </Card>
-      ))}
+      <WhatsAppCard />
     </div>
   )
 }

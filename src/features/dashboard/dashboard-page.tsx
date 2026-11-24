@@ -193,7 +193,8 @@ function DashboardContent({ data }: { data: DashboardSummary }) {
             ) : (
               <ul className="divide-y">
                 {data.unread.map((c) => (
-                  <li key={c.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                  <li key={c.id}>
+                    <Link to={`/mensajes?conversacion=${c.id}`} className="flex items-start gap-3 rounded-md py-3 hover:bg-muted/50">
                     <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-muted" title={channelLabel[c.channel]}>
                       <ChannelIcon channel={c.channel} className="size-3.5" />
                     </span>
@@ -208,6 +209,7 @@ function DashboardContent({ data }: { data: DashboardSummary }) {
                       <span className="text-[11px] text-muted-foreground">{timeAgo(c.last_message_at)}</span>
                       <span className="rounded-full bg-primary px-1.5 text-[10px] font-semibold leading-4 text-primary-foreground">{c.unread_count}</span>
                     </div>
+                    </Link>
                   </li>
                 ))}
               </ul>

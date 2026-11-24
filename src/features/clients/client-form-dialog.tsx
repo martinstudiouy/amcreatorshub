@@ -58,11 +58,14 @@ export function ClientFormDialog({
   onOpenChange,
   client,
   onSaved,
+  initial,
 }: {
   open: boolean
   onOpenChange: (o: boolean) => void
   client?: ClientOverview | null
   onSaved?: (id: string) => void
+  /** Datos para precargar un cliente nuevo (por ejemplo, desde una conversación) */
+  initial?: Partial<Form>
 }) {
   const qc = useQueryClient()
   const isAdmin = useRole() === 'admin'
@@ -71,10 +74,10 @@ export function ClientFormDialog({
 
   useEffect(() => {
     if (open) {
-      setF(client ? fromClient(client) : empty)
+      setF(client ? fromClient(client) : { ...empty, ...initial })
       setErrors({})
     }
-  }, [open, client])
+  }, [open, client]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((x) => ({ ...x, [k]: v }))
 

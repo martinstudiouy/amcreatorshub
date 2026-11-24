@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/app-layout'
-import { NAV } from '@/components/layout/nav'
 import { useAuth } from '@/features/auth/auth-context'
 import { ForgotPasswordPage } from '@/features/auth/forgot-password-page'
 import { RequireAuth, RequireRole } from '@/features/auth/guards'
@@ -17,7 +16,8 @@ import { MetricsPage } from '@/features/metrics/metrics-page'
 import { FinancePage } from '@/features/finance/finance-page'
 import { PortalLayout } from '@/features/portal/portal-layout'
 import { PortalContent, PortalHome, PortalMetrics } from '@/features/portal/portal-pages'
-import { ComingSoon, NotFound } from '@/features/misc/coming-soon'
+import { NotFound } from '@/features/misc/coming-soon'
+import { InboxPage } from '@/features/inbox/inbox-page'
 import { ProjectDetailPage } from '@/features/projects/project-detail-page'
 import { ProjectsPage } from '@/features/projects/projects-page'
 import { PrivacyPage } from '@/features/misc/privacy-page'
@@ -59,13 +59,7 @@ export default function App() {
         <Route path="contenidos" element={<ContentPage />} />
         <Route path="metricas" element={<MetricsPage />} />
         <Route path="finanzas" element={<RequireRole roles={['admin']}><FinancePage /></RequireRole>} />
-        {NAV.filter((n) => n.phase > 6).map((n) => (
-          <Route
-            key={n.to}
-            path={`${n.to.slice(1)}/*`}
-            element={<RequireRole roles={n.roles}><ComingSoon /></RequireRole>}
-          />
-        ))}
+        <Route path="mensajes" element={<InboxPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

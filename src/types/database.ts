@@ -605,7 +605,9 @@ export type Database = {
           assignee_id: string | null;
           channel: Database["public"]["Enums"]["channel_type"];
           client_id: string | null;
+          contact_avatar: string | null;
           contact_name: string | null;
+          contact_username: string | null;
           created_at: string;
           external_contact_id: string;
           id: string;
@@ -623,7 +625,9 @@ export type Database = {
           assignee_id?: string | null;
           channel: Database["public"]["Enums"]["channel_type"];
           client_id?: string | null;
+          contact_avatar?: string | null;
           contact_name?: string | null;
+          contact_username?: string | null;
           created_at?: string;
           external_contact_id: string;
           id?: string;
@@ -640,7 +644,9 @@ export type Database = {
           assignee_id?: string | null;
           channel?: Database["public"]["Enums"]["channel_type"];
           client_id?: string | null;
+          contact_avatar?: string | null;
           contact_name?: string | null;
+          contact_username?: string | null;
           created_at?: string;
           external_contact_id?: string;
           id?: string;
@@ -1288,7 +1294,9 @@ export type Database = {
           direction: Database["public"]["Enums"]["message_direction"];
           error_message: string | null;
           external_message_id: string | null;
+          file_name: string | null;
           id: string;
+          media_mime: string | null;
           media_path: string | null;
           sent_at: string;
           sent_by: string | null;
@@ -1305,7 +1313,9 @@ export type Database = {
           direction: Database["public"]["Enums"]["message_direction"];
           error_message?: string | null;
           external_message_id?: string | null;
+          file_name?: string | null;
           id?: string;
+          media_mime?: string | null;
           media_path?: string | null;
           sent_at?: string;
           sent_by?: string | null;
@@ -1321,7 +1331,9 @@ export type Database = {
           direction?: Database["public"]["Enums"]["message_direction"];
           error_message?: string | null;
           external_message_id?: string | null;
+          file_name?: string | null;
           id?: string;
+          media_mime?: string | null;
           media_path?: string | null;
           sent_at?: string;
           sent_by?: string | null;
@@ -2301,6 +2313,7 @@ export type Database = {
           created_at: string;
           id: string;
           language: string;
+          meta_id: string | null;
           name: string;
           status: Database["public"]["Enums"]["template_status"];
           updated_at: string;
@@ -2313,6 +2326,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           language?: string;
+          meta_id?: string | null;
           name: string;
           status?: Database["public"]["Enums"]["template_status"];
           updated_at?: string;
@@ -2324,6 +2338,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           language?: string;
+          meta_id?: string | null;
           name?: string;
           status?: Database["public"]["Enums"]["template_status"];
           updated_at?: string;
@@ -2826,6 +2841,19 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      claim_whatsapp_reminders: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          client_id: string;
+          client_name: string;
+          event_id: string;
+          location: string;
+          meet_url: string;
+          starts_at: string;
+          title: string;
+          whatsapp: string;
+        }[];
+      };
       create_approval: { Args: { p_client_id: string; p_post_ids: string[] }; Returns: string };
       create_project_from_template: {
         Args: {
@@ -2868,11 +2896,42 @@ export type Database = {
         }[];
       };
       google_sync_status: { Args: Record<PropertyKey, never>; Returns: Json };
+      ingest_message: {
+        Args: {
+          p_account_id: string;
+          p_avatar?: string;
+          p_body: string;
+          p_channel: Database["public"]["Enums"]["channel_type"];
+          p_contact: string;
+          p_contact_name: string;
+          p_direction: Database["public"]["Enums"]["message_direction"];
+          p_external_id: string;
+          p_file_name: string;
+          p_media_mime: string;
+          p_media_path: string;
+          p_sent_at: string;
+          p_sent_by?: string;
+          p_template: string;
+          p_type: Database["public"]["Enums"]["message_type"];
+          p_username: string;
+        };
+        Returns: string;
+      };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_staff: { Args: Record<PropertyKey, never>; Returns: boolean };
       mark_all_notifications_read: { Args: Record<PropertyKey, never>; Returns: undefined };
+      mark_conversation_read: { Args: { p_id: string }; Returns: undefined };
       mark_overdue_invoices: { Args: Record<PropertyKey, never>; Returns: number };
+      match_client: {
+        Args: {
+          p_channel: Database["public"]["Enums"]["channel_type"];
+          p_contact: string;
+          p_username?: string;
+        };
+        Returns: string;
+      };
       month_name_es: { Args: { d: string }; Returns: string };
+      phone_digits: { Args: { p: string }; Returns: string };
       portal_decide_post: {
         Args: { p_comment?: string; p_decision: string; p_post_id: string };
         Returns: undefined;
@@ -2906,8 +2965,17 @@ export type Database = {
       send_event_reminders: { Args: Record<PropertyKey, never>; Returns: number };
       setup_google_sync_cron: { Args: { p_project_url: string }; Returns: undefined };
       setup_instagram_crons: { Args: { p_project_url?: string }; Returns: undefined };
+      setup_messages_cron: { Args: Record<PropertyKey, never>; Returns: undefined };
       studio_public: { Args: Record<PropertyKey, never>; Returns: Json };
       today_mvd: { Args: Record<PropertyKey, never>; Returns: string };
+      update_message_status: {
+        Args: {
+          p_error?: string;
+          p_external_id: string;
+          p_status: Database["public"]["Enums"]["delivery_status"];
+        };
+        Returns: undefined;
+      };
       update_social_token: {
         Args: { p_account_id: string; p_expires_at: string; p_token: string };
         Returns: undefined;

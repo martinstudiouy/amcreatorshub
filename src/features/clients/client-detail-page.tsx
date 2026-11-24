@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, CalendarDays, Ellipsis, FolderKanban, Hourglass, Mail, Pencil, Phone, Plus, Trash2, KeyRound } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Ellipsis, FolderKanban, Mail, Pencil, Phone, Plus, Trash2, KeyRound } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -26,6 +26,7 @@ import { PortalAccessDialog } from '@/features/portal/portal-access-dialog'
 import { ClientMetricsTab } from '@/features/metrics/metrics-page'
 import { ClientContentTab } from '@/features/content/client-content-tab'
 import { ClientFinanceTab } from '@/features/finance/client-finance-tab'
+import { ClientMessagesTab } from '@/features/inbox/client-messages-tab'
 import { BrandKitTab } from './brand-kit-tab'
 import { ClientFormDialog } from './client-form-dialog'
 import { NotesTab } from './notes-tab'
@@ -70,7 +71,7 @@ export function ClientDetailPage() {
     { id: 'proyectos', label: 'Proyectos' },
     { id: 'notas', label: 'Notas' },
     { id: 'contenido', label: 'Contenido' },
-    { id: 'mensajes', label: 'Mensajes', phase: 7 },
+    { id: 'mensajes', label: 'Mensajes' },
     { id: 'metricas', label: 'Métricas' },
     ...(isAdmin ? [{ id: 'finanzas', label: 'Finanzas' }] : []),
   ]
@@ -146,7 +147,6 @@ export function ClientDetailPage() {
           {tabs.map((t) => (
             <TabsTrigger key={t.id} value={t.id}>
               {t.label}
-              {t.phase && <span className="ml-1.5 text-[10px] text-muted-foreground">F{t.phase}</span>}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -154,15 +154,9 @@ export function ClientDetailPage() {
         <TabsContent value="proyectos"><ClientProjects clientId={c.id} /></TabsContent>
         <TabsContent value="notas"><NotesTab clientId={c.id} /></TabsContent>
         <TabsContent value="contenido"><ClientContentTab clientId={c.id} /></TabsContent>
+        <TabsContent value="mensajes"><ClientMessagesTab clientId={c.id} contactName={c.name ?? c.brand_name} whatsapp={c.whatsapp} /></TabsContent>
         <TabsContent value="metricas"><ClientMetricsTab clientId={c.id} brandName={c.brand_name} /></TabsContent>
         {isAdmin && <TabsContent value="finanzas"><ClientFinanceTab clientId={c.id} /></TabsContent>}
-        {tabs.filter((t) => t.phase).map((t) => (
-          <TabsContent key={t.id} value={t.id}>
-            <Card>
-              <EmptyState icon={Hourglass} title={`${t.label} llega en la Fase ${t.phase}`} description={`Acá vas a ver ${t.label.toLowerCase()} de ${c.brand_name}.`} />
-            </Card>
-          </TabsContent>
-        ))}
       </Tabs>
 
       <ClientFormDialog open={editing} onOpenChange={setEditing} client={c} />

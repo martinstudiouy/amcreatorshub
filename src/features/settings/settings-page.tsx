@@ -8,6 +8,7 @@ import { ProfileTab } from './profile-tab'
 import { StudioTab } from './studio-tab'
 import { TeamTab } from './team-tab'
 import { TemplatesTab } from './templates-tab'
+import { MessagesSettingsTab } from '@/features/inbox/messages-settings'
 
 export function SettingsPage() {
   const role = useRole()
@@ -18,6 +19,7 @@ export function SettingsPage() {
     { id: 'estudio', label: 'Estudio', show: isAdmin },
     { id: 'equipo', label: 'Equipo y roles', show: isAdmin },
     { id: 'plantillas', label: 'Plantillas de proyecto', show: true },
+    { id: 'mensajes', label: 'Mensajes', show: true },
     { id: 'tipo-de-cambio', label: 'Tipo de cambio', show: true },
     { id: 'integraciones', label: 'Integraciones', show: isAdmin },
   ].filter((t) => t.show)
@@ -39,6 +41,7 @@ export function SettingsPage() {
         {isAdmin && <TabsContent value="estudio"><StudioTab /></TabsContent>}
         {isAdmin && <TabsContent value="equipo"><TeamTab /></TabsContent>}
         <TabsContent value="plantillas"><TemplatesTab /></TabsContent>
+        <TabsContent value="mensajes"><MessagesSettingsTab /></TabsContent>
         <TabsContent value="tipo-de-cambio"><ExchangeRatesTab canEdit={isAdmin} /></TabsContent>
         {isAdmin && <TabsContent value="integraciones"><IntegrationsTab /></TabsContent>}
       </Tabs>

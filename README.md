@@ -104,12 +104,20 @@ src/
 - Aprueba o pide cambios con `portal_decide_post`: la publicación pasa a Aprobado o vuelve a Borrador con el comentario, queda registrada como aprobación y el equipo recibe una notificación.
 - Métricas y reporte mensual en PDF, en modo solo lectura.
 
+## Mensajes (WhatsApp e Instagram)
+
+- Meta manda cada mensaje nuevo a la Edge Function `meta-webhook` (firma validada con `META_APP_SECRET`). La función guarda todo con `ingest_message`: evita duplicados, vincula solo la conversación con el cliente (por los últimos 8 dígitos del WhatsApp o por el usuario de Instagram) y suma los no leídos. La bandeja se actualiza en vivo con Supabase Realtime.
+- Responder, mandar plantillas y sincronizarlas pasa por la Edge Function `messages`. Se respeta la ventana de 24 horas: fuera de ella WhatsApp solo acepta plantillas aprobadas e Instagram no deja responder.
+- Fotos, audios y documentos recibidos se guardan en el bucket privado `messages`.
+- Recordatorios de agenda: cada 10 minutos el cron `whatsapp-recordatorios` busca reuniones con aviso entre 1 y 24 horas y manda la plantilla `recordatorio_reunion` (4 variables: nombre, reunión, fecha y hora, lugar o link).
+- Claves en GitHub → Secrets: `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_BUSINESS_ACCOUNT_ID`, `META_WEBHOOK_VERIFY_TOKEN`. URL del webhook: `https://<proyecto>.supabase.co/functions/v1/meta-webhook`.
+
 ## Seguridad
 
 - RLS activado en las 34 tablas; por defecto nadie ve nada hasta que una política lo permite.
 - El equipo no ve finanzas ni montos (fee del cliente, presupuesto del proyecto): se leen desde las vistas `clients_v` y `projects_v`.
 - Un usuario que no es admin no puede cambiarse el rol; siempre tiene que quedar al menos un admin activo.
-- Los tokens de Meta y Google irán en Supabase Vault (Fases 3, 6 y 7); las tablas guardan solo una referencia.
+- Los tokens de Meta y Google se guardan en Supabase Vault; las tablas guardan solo una referencia. El token de WhatsApp vive solo en los secretos de las Edge Functions.
 
 ## Comandos
 
