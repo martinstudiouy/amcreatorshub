@@ -15,7 +15,8 @@ import { ContentPage } from '@/features/content/content-page'
 import { InstagramConnectedPage } from '@/features/metrics/instagram-connected-page'
 import { MetricsPage } from '@/features/metrics/metrics-page'
 import { FinancePage } from '@/features/finance/finance-page'
-import { ClientPortal } from '@/features/misc/client-portal'
+import { PortalLayout } from '@/features/portal/portal-layout'
+import { PortalContent, PortalHome, PortalMetrics } from '@/features/portal/portal-pages'
 import { ComingSoon, NotFound } from '@/features/misc/coming-soon'
 import { ProjectDetailPage } from '@/features/projects/project-detail-page'
 import { ProjectsPage } from '@/features/projects/projects-page'
@@ -30,8 +31,8 @@ function StaffArea() {
 }
 
 export default function App() {
-  const { recovering } = useAuth()
-  if (recovering) return <ResetPasswordPage />
+  const { recovering, mustChangePassword, status } = useAuth()
+  if (recovering || (mustChangePassword && status === 'signed_in')) return <ResetPasswordPage firstTime={mustChangePassword} />
 
   return (
     <Routes>
@@ -41,7 +42,11 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/olvide-mi-contrasena" element={<ForgotPasswordPage />} />
       <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
-      <Route path="/portal" element={<RequireAuth><ClientPortal /></RequireAuth>} />
+      <Route path="/portal" element={<RequireAuth><PortalLayout /></RequireAuth>}>
+        <Route index element={<PortalHome />} />
+        <Route path="contenido" element={<PortalContent />} />
+        <Route path="metricas" element={<PortalMetrics />} />
+      </Route>
 
       <Route element={<RequireAuth><StaffArea /></RequireAuth>}>
         <Route index element={<DashboardPage />} />

@@ -10,7 +10,7 @@ import { AuthShell } from './auth-shell'
 import { useAuth } from './auth-context'
 
 /** Llega acá desde el link del email de recuperación (o de invitación). */
-export function ResetPasswordPage() {
+export function ResetPasswordPage({ firstTime }: { firstTime?: boolean }) {
   const { updatePassword, status } = useAuth()
   const navigate = useNavigate()
   const [password, setPassword] = useState('')
@@ -44,7 +44,7 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <AuthShell title="Elegí tu contraseña" subtitle="Mínimo 8 caracteres.">
+    <AuthShell title="Elegí tu contraseña" subtitle={firstTime ? 'Entraste con una contraseña temporal. Elegí una tuya para seguir (mínimo 8 caracteres).' : 'Mínimo 8 caracteres.'}>
       <form onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="pw">Nueva contraseña</Label>

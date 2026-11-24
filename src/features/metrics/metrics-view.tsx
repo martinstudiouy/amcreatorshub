@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getSettings } from '@/data/api'
+import { studioName } from '@/data/portal'
+import type { Settings } from '@/data/types'
 import { friendlyError } from '@/data/api'
 import { listDailyMetrics, listPostMetrics, syncInstagramNow, type PostMetric, type SocialAccount } from '@/data/instagram'
 import { addDays, formatDate, formatNumber, timeAgo, todayMvd } from '@/lib/format'
@@ -26,7 +28,7 @@ const MediaIcon = ({ p }: { p: PostMetric }) => {
 }
 
 /** Métricas de una cuenta de Instagram por mes, con comparativa contra el mes anterior. */
-export function MetricsView({ accounts, accountId, onAccount, month, onMonth }: { accounts: SocialAccount[]; accountId: string; onAccount: (id: string) => void; month: string; onMonth: (m: string) => void }) {
+export function MetricsView({ accounts, accountId, onAccount, month, onMonth, readOnly }: { accounts: SocialAccount[]; accountId: string; onAccount: (id: string) => void; month: string; onMonth: (m: string) => void; readOnly?: boolean }) {
   const qc = useQueryClient()
   const account = accounts.find((a) => a.id === accountId) ?? accounts[0]
   const r = monthRange(month)
@@ -71,7 +73,7 @@ export function MetricsView({ accounts, accountId, onAccount, month, onMonth }: 
 
   const report = useMutation({
     mutationFn: async () => {
-      const [{ downloadMetricsReport }, studio] = await Promise.all([import('./report-pdf'), getSettings()])
+      const [{ downloadMetricsReport }, studio] = await Promise.all([import('./report-pdf'), readOnly ? studioName().then((studio_name) => ({ studio_name }) as Settings) : getSettings()])
       await downloadMetricsReport({ account, month, monthLabel: monthLabel(`${month}-01`), prevLabel: monthLabel(`${r.prev}-01`), now: data!.now, before: data!.before, followers: data!.followers, reach: data!.reach, top: data!.top, times, studio })
     },
     onSuccess: () => toast.success('Reporte listo.'),
@@ -99,7 +101,7 @@ export function MetricsView({ accounts, accountId, onAccount, month, onMonth }: 
               <p className="truncate font-semibold">@{account.username}</p>
             )}
             <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <AccountStatus a={account} />
+              {!readOnly && <AccountStatus a={account} />}
               {account.last_synced_at ? `Actualizado ${timeAgo(account.last_synced_at)}` : 'Sin datos todavía'}
             </p>
           </div>
@@ -110,9 +112,9 @@ export function MetricsView({ accounts, accountId, onAccount, month, onMonth }: 
             <span className="min-w-36 text-center font-semibold capitalize">{monthLabel(`${month}-01`)}</span>
             <Button variant="ghost" size="icon" onClick={() => onMonth(addMonths(`${month}-01`, 1).slice(0, 7))} disabled={isCurrent} aria-label="Mes siguiente"><ChevronRight /></Button>
           </div>
-          <Button variant="outline" onClick={() => sync.mutate()} disabled={sync.isPending || account.status === 'desconectada'}>
+          {!readOnly && <Button variant="outline" onClick={() => sync.mutate()} disabled={sync.isPending || account.status === 'desconectada'}>
             {sync.isPending ? <LoaderCircle className="animate-spin" /> : <RefreshCw />} <span className="hidden sm:inline">Actualizar</span>
-          </Button>
+          </Button>}
           <Button onClick={() => report.mutate()} disabled={!data || report.isPending}>
             {report.isPending ? <LoaderCircle className="animate-spin" /> : <FileDown />} Reporte mensual
           </Button>

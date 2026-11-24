@@ -15,6 +15,8 @@ interface AuthState {
   profile: Profile | null
   /** true cuando el usuario llegó desde el link de "olvidé mi contraseña" */
   recovering: boolean
+  /** true si entró con una contraseña temporal (acceso al portal) y tiene que elegir la suya */
+  mustChangePassword: boolean
   signIn: (email: string, password: string) => Promise<void>
   signInDemo: (role: Role) => Promise<void>
   signOut: () => Promise<void>
@@ -78,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: isDemo ? 'martin@amcreators.uy' : (session?.user.email ?? null),
     profile,
     recovering,
+    mustChangePassword: !isDemo && session?.user.user_metadata?.must_change_password === true,
     async signIn(email, password) {
       const { error } = await sb().auth.signInWithPassword({ email, password })
       if (error) throw error
@@ -106,8 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     async updatePassword(password) {
       if (isDemo) return
-      const { error } = await sb().auth.updateUser({ password })
+      const { data, error } = await sb().auth.updateUser({ password, data: { must_change_password: false } })
       if (error) throw error
+      if (data.user) setSession((s) => (s ? { ...s, user: data.user } : s))
       setRecovering(false)
     },
     async refreshProfile() {

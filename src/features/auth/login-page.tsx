@@ -39,7 +39,7 @@ export function LoginPage() {
     const options: { role: Role; label: string; desc: string; icon: typeof User }[] = [
       { role: 'admin', label: 'Entrar como Admin', desc: 'Acceso total, incluye finanzas', icon: ShieldCheck },
       { role: 'equipo', label: 'Entrar como Equipo', desc: 'Sin finanzas ni montos', icon: Users },
-      { role: 'cliente', label: 'Entrar como Cliente', desc: 'Portal de solo lectura (Fase 8)', icon: User },
+      { role: 'cliente', label: 'Entrar como Cliente', desc: 'Portal del cliente: aprobar contenido y ver métricas', icon: User },
     ]
     return (
       <AuthShell

@@ -448,3 +448,6 @@ verify_jwt = false
 
 [functions.instagram-sync]
 verify_jwt = false
+
+[functions.portal-access]
+verify_jwt = false

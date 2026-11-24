@@ -240,7 +240,7 @@ export const content = {
     post(401, 1, 'feed', -6, '12:00', 'Nuevo horario: abrimos todos los días desde las 8.', '#caferambla', 'publicado'),
     post(402, 1, 'carrusel', -3, '19:00', 'Cómo preparamos nuestro cold brew, paso a paso.', '#coldbrew #cafe', 'publicado'),
     post(403, 1, 'feed', 5, '12:30', 'Tarde de lluvia, café y medialunas.', '#montevideo', 'aprobado'),
-    post(404, 1, 'reel', 8, '18:30', 'Latte art: el corazón perfecto.', '#latteart', 'borrador'),
+    post(404, 1, 'reel', 8, '18:30', 'Latte art: el corazón perfecto.', '#latteart', 'en_aprobacion'),
     post(405, 2, 'feed', -4, '09:00', 'Tu espalda te lo va a agradecer: 3 ejercicios para la oficina.', '#pilates #salud', 'publicado'),
     post(406, 2, 'carrusel', 4, '09:00', 'Conocé al equipo de Pilates Pocitos.', '#pilates #equipo', 'en_aprobacion'),
     post(407, 2, 'story', 2, '08:00', 'Recordatorio: clase abierta este sábado.', null, 'aprobado'),

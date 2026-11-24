@@ -226,7 +226,7 @@ function ApprovalForm({ token, data, onDone }: { token: string; data: PublicAppr
 }
 
 /** Imágenes y videos deslizables, con puntitos como en Instagram. */
-function MediaCarousel({ media, vertical }: { media: PublicApproval['posts'][number]['media']; vertical: boolean }) {
+export function MediaCarousel({ media, vertical }: { media: PublicApproval['posts'][number]['media']; vertical: boolean }) {
   const [index, setIndex] = useState(0)
   const ref = useRef<HTMLDivElement>(null)
   if (!media.length) return <div className="flex aspect-[4/5] items-center justify-center bg-muted text-sm text-muted-foreground">Sin imagen</div>

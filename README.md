@@ -6,7 +6,7 @@ CRM interno de **AM Creators** (Montevideo): clientes, proyectos, contenidos, ag
 - **Idioma:** español rioplatense · **Moneda:** UYU y USD · **Zona horaria:** America/Montevideo · **Fechas:** DD/MM/AAAA
 - **Marca:** azul royal `#0300FF`, Montserrat, isotipo "am" en vector tomado del brandbook
 
-## Estado: Fase 6 de 8
+## Estado: Fases 1 a 6 y 8 (falta la 7: bandeja de mensajes)
 
 | Fase | Qué incluye | Estado |
 | --- | --- | --- |
@@ -17,7 +17,7 @@ CRM interno de **AM Creators** (Montevideo): clientes, proyectos, contenidos, ag
 | 5 | Calendario de contenidos (mes, semana, lista y grilla de Instagram, arrastrar y soltar) y aprobación del cliente por link, sin login | ✅ |
 | 6 | Instagram: conexión por OAuth (Instagram Login), publicación automática, métricas diarias, top 5, mejor horario y reporte mensual en PDF | ✅ |
 | 7 | Bandeja unificada WhatsApp + Instagram | — |
-| 8 | Portal de cliente y reportes mensuales | — |
+| 8 | Portal del cliente: aprobar contenido, ver el calendario, la grilla, las métricas y descargar el reporte mensual | ✅ |
 
 ## Probarlo sin configurar nada (modo demo)
 
@@ -96,6 +96,13 @@ src/
 - `instagram-publish` corre cada minuto: arma los contenedores (imagen, video, carrusel, reel o story), espera a que Instagram procese los videos y publica. Reintenta 3 veces los errores pasajeros; si no, marca la publicación con estado Error y el motivo.
 - `instagram-sync` corre todos los días a las 06:10 (Montevideo): seguidores, alcance, visualizaciones, interacciones y clics del día anterior, y métricas de las publicaciones de los últimos 90 días.
 - Las imágenes se convierten a JPG en el navegador al subirlas, porque Instagram solo publica JPG.
+
+## Portal del cliente
+
+- El admin da acceso desde la ficha del cliente → botón **Portal**: nombre y email. La Edge Function `portal-access` crea el usuario con rol `cliente` y una contraseña temporal que se muestra una sola vez (con mensaje listo para WhatsApp). Al entrar por primera vez, el cliente tiene que elegir su contraseña (`must_change_password`).
+- El cliente ve solo su marca y solo lo que ya pasó por el estudio (en aprobación, aprobado, programado, publicado). Nunca ve montos.
+- Aprueba o pide cambios con `portal_decide_post`: la publicación pasa a Aprobado o vuelve a Borrador con el comentario, queda registrada como aprobación y el equipo recibe una notificación.
+- Métricas y reporte mensual en PDF, en modo solo lectura.
 
 ## Seguridad
 

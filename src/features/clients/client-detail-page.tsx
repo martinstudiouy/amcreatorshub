@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, CalendarDays, Ellipsis, FolderKanban, Hourglass, Mail, Pencil, Phone, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, CalendarDays, Ellipsis, FolderKanban, Hourglass, Mail, Pencil, Phone, Plus, Trash2, KeyRound } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -22,6 +22,7 @@ import { ProjectCard } from '@/features/projects/project-card'
 import { ProjectFormDialog } from '@/features/projects/project-form-dialog'
 import { formatDate, formatMoney } from '@/lib/format'
 import { invalidateCrm } from '@/lib/invalidate'
+import { PortalAccessDialog } from '@/features/portal/portal-access-dialog'
 import { ClientMetricsTab } from '@/features/metrics/metrics-page'
 import { ClientContentTab } from '@/features/content/client-content-tab'
 import { ClientFinanceTab } from '@/features/finance/client-finance-tab'
@@ -37,6 +38,7 @@ export function ClientDetailPage() {
   const [params, setParams] = useSearchParams()
   const { data: c, isLoading, error, refetch } = useQuery({ queryKey: ['client', id], queryFn: () => getClient(id) })
   const [editing, setEditing] = useState(false)
+  const [portalOpen, setPortalOpen] = useState(false)
   const [archiving, setArchiving] = useState(false)
   const archive = useMutation({
     mutationFn: () => archiveClient(id),
@@ -113,6 +115,11 @@ export function ClientDetailPage() {
             </div>
           </div>
           <div className="flex gap-2">
+            {isAdmin && (
+              <Button variant="outline" onClick={() => setPortalOpen(true)}>
+                <KeyRound /> <span className="hidden sm:inline">Portal</span>
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setEditing(true)}>
               <Pencil /> Editar
             </Button>
@@ -132,6 +139,7 @@ export function ClientDetailPage() {
         </div>
         <ServicesRow clientId={c.id} fee={isAdmin && c.monthly_fee ? formatMoney(c.monthly_fee, c.currency) : null} />
       </Card>
+      {isAdmin && <PortalAccessDialog client={c} open={portalOpen} onOpenChange={setPortalOpen} />}
 
       <Tabs value={tab} onValueChange={(v) => setParams({ tab: v }, { replace: true })}>
         <TabsList className="max-w-full">

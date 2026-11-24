@@ -2873,6 +2873,10 @@ export type Database = {
       mark_all_notifications_read: { Args: Record<PropertyKey, never>; Returns: undefined };
       mark_overdue_invoices: { Args: Record<PropertyKey, never>; Returns: number };
       month_name_es: { Args: { d: string }; Returns: string };
+      portal_decide_post: {
+        Args: { p_comment?: string; p_decision: string; p_post_id: string };
+        Returns: undefined;
+      };
       run_finance_jobs: { Args: Record<PropertyKey, never>; Returns: Json };
       save_google_connection: {
         Args: {
@@ -2902,6 +2906,7 @@ export type Database = {
       send_event_reminders: { Args: Record<PropertyKey, never>; Returns: number };
       setup_google_sync_cron: { Args: { p_project_url: string }; Returns: undefined };
       setup_instagram_crons: { Args: { p_project_url?: string }; Returns: undefined };
+      studio_public: { Args: Record<PropertyKey, never>; Returns: Json };
       today_mvd: { Args: Record<PropertyKey, never>; Returns: string };
       update_social_token: {
         Args: { p_account_id: string; p_expires_at: string; p_token: string };
