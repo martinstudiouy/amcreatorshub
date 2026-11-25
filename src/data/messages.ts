@@ -248,6 +248,7 @@ export interface MessagingStatus {
   webhook: boolean
   subscribed?: boolean
   subscribeError?: string | null
+  instagram?: { username: string; subscribed: boolean; error: string | null }[]
 }
 export async function messagingStatus(): Promise<MessagingStatus> {
   if (isDemo) return { whatsapp: true, phone: '+598 99 000 111', name: 'AM Creators', webhook: true, subscribed: true }

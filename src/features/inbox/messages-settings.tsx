@@ -245,6 +245,13 @@ export function WhatsAppCard() {
       )}
       {data && !data.webhook && <p className="text-xs text-warning">Falta el token del webhook: los mensajes nuevos no van a llegar.</p>}
       {data?.whatsapp && data.subscribed === false && <p className="text-xs text-destructive">No se pudo activar la recepción de mensajes: {data.subscribeError}</p>}
+      {data?.instagram?.map((i) =>
+        i.subscribed ? (
+          <p key={i.username} className="flex items-center gap-1.5 text-sm"><CheckCircle2 className="size-4 text-success" /> Mensajes de Instagram activos en @{i.username}</p>
+        ) : (
+          <p key={i.username} className="text-xs text-destructive">No se pudieron activar los mensajes de Instagram en @{i.username}: {i.error}</p>
+        ),
+      )}
       <p className="mt-auto text-xs text-muted-foreground">Las claves se guardan solo en el servidor, nunca en el navegador.</p>
     </Card>
   )

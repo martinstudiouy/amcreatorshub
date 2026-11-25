@@ -197,13 +197,32 @@ export async function igProfile(token: string, igsid: string) {
 
 /** Activa los webhooks de mensajes para una cuenta de Instagram conectada. */
 export async function igSubscribe(token: string, igId: string) {
+  // Con el login unificado (graph.facebook.com) los mensajes directos llegan por la página
+  // de Facebook vinculada a la cuenta. Probamos las dos vías: la cuenta y su página.
+  const errors: string[] = [];
+  let ok = false;
   try {
     await ig(`${igId}/subscribed_apps`, token, { subscribed_fields: "messages" }, "POST");
-    return true;
+    ok = true;
   } catch (e) {
-    console.error("No se pudo suscribir a los mensajes de Instagram", e);
-    return false;
+    errors.push(`cuenta: ${(e as Error).message}`);
   }
+  try {
+    const pages = await ig<{ data: { id: string; access_token?: string; instagram_business_account?: { id: string } }[] }>(
+      "me/accounts",
+      token,
+      { fields: "id,access_token,instagram_business_account", limit: 100 },
+    );
+    const page = pages.data.find((p) => p.instagram_business_account?.id === igId);
+    if (page) {
+      await ig(`${page.id}/subscribed_apps`, page.access_token ?? token, { subscribed_fields: "messages" }, "POST");
+      ok = true;
+    } else errors.push("página: no se encontró la página de Facebook vinculada");
+  } catch (e) {
+    errors.push(`página: ${(e as Error).message}`);
+  }
+  if (!ok) console.error("No se pudo suscribir a los mensajes de Instagram", errors);
+  return { ok, error: ok ? null : errors.join(" · ") };
 }
 
 // ================================================================ Firma de los webhooks de Meta

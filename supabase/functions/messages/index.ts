@@ -5,10 +5,11 @@
 // { action: 'sync_templates' }                           → trae las plantillas desde Meta (solo admin)
 // { action: 'reminders' }                                → cron: recordatorios de la agenda por WhatsApp
 import { adminClient, corsHeaders, getCaller, json, serve } from "../_shared/http.ts";
-import { IG_GRAPH, IgError, notifyStaff } from "../_shared/instagram.ts";
+import { IG_GRAPH, IgError, getToken, notifyStaff } from "../_shared/instagram.ts";
 import {
   fillTemplate,
   igSendText,
+  igSubscribe,
   waAccountId,
   waConfigured,
   waListTemplates,
@@ -66,7 +67,23 @@ serve(async (req) => {
           console.error("subscribed_apps", r);
         }
       }
+      // Mensajes directos de Instagram: suscribir cada cuenta conectada (idempotente)
+      const instagram: { username: string; subscribed: boolean; error: string | null }[] = [];
+      const { data: igAccounts } = await admin
+        .from("social_accounts")
+        .select("id, external_id, username")
+        .eq("platform", "instagram")
+        .eq("status", "conectada");
+      for (const acc of igAccounts ?? []) {
+        try {
+          const r = await igSubscribe(await getToken(admin, acc.id), String(acc.external_id));
+          instagram.push({ username: acc.username, subscribed: r.ok, error: r.error });
+        } catch (e) {
+          instagram.push({ username: acc.username, subscribed: false, error: (e as Error).message });
+        }
+      }
       return json({
+        instagram,
         whatsapp: waConfigured(),
         phone: phone.display_phone_number ?? null,
         name: phone.verified_name ?? null,
