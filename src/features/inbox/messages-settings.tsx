@@ -245,6 +245,8 @@ export function WhatsAppCard() {
       )}
       {data && !data.webhook && <p className="text-xs text-warning">Falta el token del webhook: los mensajes nuevos no van a llegar.</p>}
       {data?.whatsapp && data.subscribed === false && <p className="text-xs text-destructive">No se pudo activar la recepción de mensajes: {data.subscribeError}</p>}
+      {data && !data.instagram && <p className="text-xs text-muted-foreground">Mensajes de Instagram: el servidor todavía no informó el estado.</p>}
+      {data?.instagram?.length === 0 && <p className="text-xs text-muted-foreground">Mensajes de Instagram: no hay cuentas conectadas.</p>}
       {data?.instagram?.map((i) =>
         i.subscribed ? (
           <p key={i.username} className="flex items-center gap-1.5 text-sm"><CheckCircle2 className="size-4 text-success" /> Mensajes de Instagram activos en @{i.username}</p>
