@@ -49,11 +49,30 @@ serve(async (req) => {
           .then((r) => r.json())
           .catch(() => ({}));
       }
+      // La cuenta de WhatsApp Business tiene que estar suscripta a la app para que Meta
+      // mande los mensajes al webhook. Es idempotente: se asegura cada vez que se consulta.
+      let subscribed = false;
+      let subscribeError: string | null = null;
+      if (waConfigured()) {
+        const r = await fetch(
+          `${IG_GRAPH}/${Deno.env.get("WHATSAPP_BUSINESS_ACCOUNT_ID")}/subscribed_apps`,
+          { method: "POST", headers: { Authorization: `Bearer ${Deno.env.get("WHATSAPP_TOKEN")}` } },
+        )
+          .then((r) => r.json())
+          .catch((e) => ({ error: { message: String(e) } }));
+        subscribed = r?.success === true;
+        if (!subscribed) {
+          subscribeError = r?.error?.message ?? "No se pudo activar la recepción de mensajes.";
+          console.error("subscribed_apps", r);
+        }
+      }
       return json({
         whatsapp: waConfigured(),
         phone: phone.display_phone_number ?? null,
         name: phone.verified_name ?? null,
         webhook: !!Deno.env.get("META_WEBHOOK_VERIFY_TOKEN"),
+        subscribed,
+        subscribeError,
       });
     }
 

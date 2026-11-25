@@ -244,6 +244,7 @@ export function WhatsAppCard() {
         <p className="text-sm text-muted-foreground">Se configura en Meta y con las claves en GitHub (pasos de la Fase 7).</p>
       )}
       {data && !data.webhook && <p className="text-xs text-warning">Falta el token del webhook: los mensajes nuevos no van a llegar.</p>}
+      {data?.whatsapp && data.subscribed === false && <p className="text-xs text-destructive">No se pudo activar la recepción de mensajes: {data.subscribeError}</p>}
       <p className="mt-auto text-xs text-muted-foreground">Las claves se guardan solo en el servidor, nunca en el navegador.</p>
     </Card>
   )

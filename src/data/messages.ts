@@ -246,9 +246,11 @@ export interface MessagingStatus {
   phone: string | null
   name: string | null
   webhook: boolean
+  subscribed?: boolean
+  subscribeError?: string | null
 }
 export async function messagingStatus(): Promise<MessagingStatus> {
-  if (isDemo) return { whatsapp: true, phone: '+598 99 000 111', name: 'AM Creators', webhook: true }
+  if (isDemo) return { whatsapp: true, phone: '+598 99 000 111', name: 'AM Creators', webhook: true, subscribed: true }
   return invoke<MessagingStatus>({ action: 'status' })
 }
 
